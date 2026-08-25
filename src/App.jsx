@@ -5,6 +5,7 @@ import { addDoc, collection, doc, onSnapshot, setDoc } from 'firebase/firestore'
 import { auth, db } from './firebase'
 import './App.css'
 import './guest.css'
+import './responsive.css'
 
 const TMDB_URL = 'https://api.themoviedb.org/3'
 const tmdbToken = import.meta.env.VITE_TMDB_READ_TOKEN

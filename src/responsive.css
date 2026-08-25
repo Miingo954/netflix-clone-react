@@ -1,0 +1,89 @@
+/* Title details can be longer than a phone screen. Keep the backdrop scrollable. */
+.modal-backdrop {
+  display: block;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.movie-modal {
+  margin: 24px auto;
+}
+
+.video-modal {
+  margin: max(24px, 10vh) auto;
+}
+
+@media (max-width: 700px) {
+  .nav {
+    height: auto;
+    min-height: 60px;
+    padding: 0 18px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .nav .search {
+    display: none;
+  }
+
+  .nav nav {
+    display: none;
+    order: 4;
+    width: 100%;
+    padding: 4px 0 14px;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .nav nav a {
+    padding: 12px 4px;
+    font-size: .95rem;
+    border-top: 1px solid #252525;
+  }
+
+  .nav:has(.profile-button[aria-expanded="true"]) nav {
+    display: flex;
+  }
+
+  .profile {
+    margin-left: auto;
+  }
+
+  .profile-button {
+    font-size: 0;
+    width: 38px;
+    height: 38px;
+    justify-content: center;
+  }
+
+  .profile-button span {
+    display: none;
+  }
+
+  .profile-button::after {
+    content: '☰';
+    font-size: 1.45rem;
+    line-height: 1;
+  }
+
+  .profile-menu {
+    display: none;
+  }
+
+  .modal-backdrop {
+    padding: 12px;
+  }
+
+  .movie-modal {
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .modal-copy {
+    padding: 20px;
+  }
+
+  .movie-modal>img {
+    max-height: none;
+  }
+}
