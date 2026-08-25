@@ -9,6 +9,11 @@ import './responsive.css'
 
 const TMDB_URL = 'https://api.themoviedb.org/3'
 const tmdbToken = import.meta.env.VITE_TMDB_READ_TOKEN
+const excludedTitles = new Set(['Tagesschau', 'The Tonight Show Starring Jimmy Fallon', 'Watch What Happens Live with Andy Cohen', 'Paradise Hotel'])
+
+function isStreamworthy(item) {
+  return !excludedTitles.has(item.title || item.name)
+}
 
 const fallbackMovies = [
   ['aurora', 'Aurora Drift', '2026', 'PG-13', 'Sci-Fi', 'A rescue pilot follows a mysterious signal across a frozen planet.', 'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=900&q=85'],
@@ -87,9 +92,9 @@ function StreamingApp() {
       setApiStatus('Loading live movies and TV shows…')
       try {
         const [popularMovies, popularSeries, trending] = await Promise.all([tmdbRequest('/movie/popular'), tmdbRequest('/tv/popular'), tmdbRequest('/trending/all/week')])
-        const movies = popularMovies.results.slice(0, 10).map((item) => toTmdbMovie(item, 'movie'))
-        const seriesResults = popularSeries.results.slice(0, 10).map((item) => toTmdbMovie(item, 'series'))
-        const trendingResults = trending.results.slice(0, 6).filter((item) => item.media_type === 'movie' || item.media_type === 'tv').map((item) => toTmdbMovie(item, item.media_type === 'tv' ? 'series' : 'movie'))
+        const movies = popularMovies.results.filter(isStreamworthy).slice(0, 10).map((item) => toTmdbMovie(item, 'movie'))
+        const seriesResults = popularSeries.results.filter(isStreamworthy).slice(0, 10).map((item) => toTmdbMovie(item, 'series'))
+        const trendingResults = trending.results.filter((item) => (item.media_type === 'movie' || item.media_type === 'tv') && isStreamworthy(item)).slice(0, 6).map((item) => toTmdbMovie(item, item.media_type === 'tv' ? 'series' : 'movie'))
         const uniqueTitles = [...trendingResults, ...movies, ...seriesResults]
           .filter((title, index, titles) => titles.findIndex((item) => item.id === title.id) === index)
         setApiMovies(uniqueTitles)
