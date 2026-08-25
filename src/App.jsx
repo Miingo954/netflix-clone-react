@@ -144,13 +144,18 @@ function StreamingApp() {
 
   useEffect(() => {
     const hero = document.querySelector('.video-hero')
-    function openFeaturedTrailer(event) {
-      if (event.target.closest('button, a')) return
+    if (!hero) return
+    const hitbox = document.createElement('button')
+    hitbox.type = 'button'
+    hitbox.className = 'hero-route-hitbox'
+    hitbox.setAttribute('aria-label', `Open ${feature.title}`)
+    function openFeaturedTrailer() {
       setSelected({ ...feature, isTrailer: true })
     }
-    hero?.addEventListener('click', openFeaturedTrailer)
-    return () => hero?.removeEventListener('click', openFeaturedTrailer)
-  }, [feature])
+    hitbox.addEventListener('click', openFeaturedTrailer)
+    hero.append(hitbox)
+    return () => hitbox.remove()
+  })
 
   useEffect(() => {
     const routeId = location.pathname.split('/')[2]
