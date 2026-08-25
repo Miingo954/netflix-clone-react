@@ -143,8 +143,19 @@ function StreamingApp() {
   const previousTrailer = () => setTrailerIndex((index) => (index - 1 + trailers.length) % trailers.length)
 
   useEffect(() => {
-    const carouselTimer = window.setTimeout(() => setTrailerIndex((index) => (index + 1) % trailers.length), 15000)
+    const carouselTimer = window.setTimeout(() => setTrailerIndex((index) => (index + 1) % trailers.length), 10000)
     return () => window.clearTimeout(carouselTimer)
+  }, [trailerIndex])
+
+  useEffect(() => {
+    const hero = document.querySelector('.video-hero')
+    if (!hero) return
+    let transitionTimer
+    const startTimer = window.setTimeout(() => {
+      hero.classList.add('is-transitioning')
+      transitionTimer = window.setTimeout(() => hero.classList.remove('is-transitioning'), 900)
+    }, 60)
+    return () => { window.clearTimeout(startTimer); window.clearTimeout(transitionTimer) }
   }, [trailerIndex])
 
   useEffect(() => {
