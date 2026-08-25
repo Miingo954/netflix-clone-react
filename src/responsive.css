@@ -23,6 +23,26 @@
   cursor: pointer;
 }
 
+.video-hero .hero-video {
+  animation: trailer-slide-in .7s ease both;
+}
+
+@keyframes trailer-slide-in {
+  from { opacity: 0; transform: scale(1.18) translateX(5%); }
+  to { opacity: 1; transform: scale(1.23) translateX(0); }
+}
+
+@media (max-width: 700px) {
+  .video-hero .hero-video {
+    animation-name: trailer-slide-in-mobile;
+  }
+
+  @keyframes trailer-slide-in-mobile {
+    from { opacity: 0; transform: scale(2.05) translateX(5%); }
+    to { opacity: 1; transform: scale(2.15) translateX(0); }
+  }
+}
+
 .video-modal {
   margin: max(24px, 10vh) auto;
 }

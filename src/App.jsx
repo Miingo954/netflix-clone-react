@@ -143,6 +143,11 @@ function StreamingApp() {
   const previousTrailer = () => setTrailerIndex((index) => (index - 1 + trailers.length) % trailers.length)
 
   useEffect(() => {
+    const carouselTimer = window.setTimeout(() => setTrailerIndex((index) => (index + 1) % trailers.length), 15000)
+    return () => window.clearTimeout(carouselTimer)
+  }, [trailerIndex])
+
+  useEffect(() => {
     const hero = document.querySelector('.video-hero')
     if (!hero) return
     const hitbox = document.createElement('button')
