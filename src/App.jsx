@@ -6,6 +6,7 @@ import { auth, db } from './firebase'
 import './App.css'
 import './guest.css'
 import './responsive.css'
+import './title-page.css'
 
 const TMDB_URL = 'https://api.themoviedb.org/3'
 const tmdbToken = import.meta.env.VITE_TMDB_READ_TOKEN
@@ -151,10 +152,42 @@ function StreamingApp() {
 
   if (location.pathname === '/admin') return <AdminPanel user={user} close={() => navigate('/')} />
 
+  const routeId = location.pathname.split('/')[2]
+  const routedMovie = routeId ? allMovies.find((movie) => movie.id === routeId) : null
+  if (routedMovie) return <TitleLandingPage movie={selected?.id === routeId ? selected : routedMovie} back={() => { setSelected(null); navigate('/') }} inList={myList.includes(routedMovie.id)} toggle={toggle} />
+
   return <main className="app-shell"><header className="nav"><strong>NETFLIX</strong><nav><a href="#home">Home</a><a href="#new">New & Popular</a><a href="#list">My List</a></nav><form className="search" onSubmit={(event) => event.preventDefault()}><span>⌕</span><input aria-label="Search titles" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Titles, people, genres" />{search && <button type="button" aria-label="Clear search" onClick={() => setSearch('')}>×</button>}</form><div className="profile"><button className="profile-button" onClick={() => setProfileOpen(!profileOpen)} aria-expanded={profileOpen}><span>N</span>⌄</button>{profileOpen && <div className="profile-menu"><p>{user.email}</p><button onClick={() => { navigate('/admin'); setProfileOpen(false) }}>Content admin</button><button onClick={() => signOut(auth)}>Sign out of Netflix</button></div>}</div></header>{search && <Row title={`Search results for “${search}”`} movies={searchResults} select={openMovie} empty="No matching titles in the current collection." />}<section className="video-hero" id="home"><iframe key={`${feature.videoId}-${muted}`} className="hero-video" title={`${feature.title} video`} src={`https://www.youtube-nocookie.com/embed/${feature.videoId}?autoplay=1&mute=${muted ? 1 : 0}&controls=0&rel=0&cc_load_policy=0&playsinline=1`} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen /><div className="hero-shade" /><div className="hero-copy"><p className="eyebrow">FEATURED TRAILER</p><h1>{feature.title}</h1><p className="feature-meta">{feature.detail}</p><p>{feature.description}</p><button className="primary" onClick={() => setSelected({ ...feature, isTrailer: true })}>▶ Play</button><button className="secondary" onClick={() => setMuted(!muted)}>{muted ? '🔊 Turn sound on' : '🔇 Mute'}</button><button className="secondary" onClick={nextTrailer}>Next suggestion ›</button></div><div className="trailer-controls"><button aria-label="Previous trailer" onClick={previousTrailer}>‹</button>{trailers.map((trailer, index) => <button className={index === trailerIndex ? 'active-dot' : ''} aria-label={`Show ${trailer.title}`} key={trailer.videoId} onClick={() => setTrailerIndex(index)} />)}<button aria-label="Next trailer" onClick={nextTrailer}>›</button></div></section><Row title="Popular Movies" movies={films.slice(0, 8)} select={openMovie} /><section className="api-note" id="new"><span className="live-dot" /> {apiStatus || 'Sign in to load live content from OMDb.'}</section><Row title="Binge-Worthy Series" movies={series} select={openMovie} empty="Series will appear here when the live catalog finishes loading." /><Row id="list" title="My List" movies={savedMovies} select={openMovie} empty="Add a title using the + My List button." /><footer>Built with React, JavaScript, CSS, Firebase Authentication, and the OMDb API.</footer>{selected && <MovieModal movie={selected} close={() => { setSelected(null); navigate('/') }} inList={myList.includes(selected.id || selected.videoId)} toggle={toggle} />}</main>
 }
 
 function Row({ title, movies, select, empty, id }) { return <section className="row" id={id}><h2>{title}</h2>{movies.length ? <div className="cards">{movies.map((movie) => <button className="movie-card" key={movie.id} onClick={() => select(movie)}><img src={movie.image} alt={`${movie.title} poster`} /><span>{movie.title}</span></button>)}</div> : empty && title !== 'My List' ? <p className="empty">{empty}</p> : null}</section> }
+
+function TitleLandingPage({ movie, back, inList, toggle }) {
+  const [title, setTitle] = useState(movie)
+  const [season, setSeason] = useState(1)
+  const [episodes, setEpisodes] = useState(movie.episodes || [])
+
+  useEffect(() => {
+    setTitle(movie)
+    setSeason(1)
+    if (!movie.tmdbID || !tmdbToken) return
+    const kind = movie.type === 'series' ? 'tv' : 'movie'
+    Promise.all([tmdbRequest(`/${kind}/${movie.tmdbID}?append_to_response=videos`), movie.type === 'series' ? tmdbRequest(`/tv/${movie.tmdbID}/season/1`) : Promise.resolve(null)])
+      .then(([details, firstSeason]) => {
+        const trailer = details.videos?.results?.find((video) => video.site === 'YouTube' && video.type === 'Trailer')
+        setTitle({ ...movie, description: details.overview || movie.description, genre: details.genres?.map((genre) => genre.name).join(', ') || movie.genre, rating: details.vote_average ? `★ ${details.vote_average.toFixed(1)}` : movie.rating, trailerId: trailer?.key, backdrop: details.backdrop_path ? `https://image.tmdb.org/t/p/original${details.backdrop_path}` : movie.image, seasons: details.number_of_seasons || 1 })
+        setEpisodes(firstSeason?.episodes || [])
+      })
+      .catch(() => {})
+  }, [movie])
+
+  useEffect(() => {
+    if (title.type !== 'series' || !title.tmdbID) return
+    tmdbRequest(`/tv/${title.tmdbID}/season/${season}`).then((data) => setEpisodes(data.episodes || [])).catch(() => {})
+  }, [title.tmdbID, title.type, season])
+
+  const episodeList = episodes.length ? episodes : ['A new beginning', 'The unexpected signal', 'Into the unknown'].map((name, index) => ({ name, runtime: 45 + index * 2, overview: 'Continue the story in this episode.' }))
+  return <main className="title-page"><header className="title-nav"><strong>NETFLIX</strong><button onClick={back}>← Back to browse</button><button className="secondary" onClick={() => toggle(movie.id)}>{inList ? '✓ In My List' : '+ My List'}</button></header><section className="title-hero-page" style={{ backgroundImage: `linear-gradient(90deg, #080808 4%, rgba(8,8,8,.72) 38%, rgba(8,8,8,.12)), linear-gradient(0deg, #080808 0%, transparent 52%), url(${title.backdrop || title.image})` }}>{title.trailerId && <iframe className="title-trailer" title={`${title.title} trailer`} src={`https://www.youtube-nocookie.com/embed/${title.trailerId}?autoplay=1&mute=1&controls=0&rel=0&playsinline=1`} allow="autoplay; encrypted-media; picture-in-picture" />}<div className="title-hero-content"><p className="eyebrow">{title.type === 'series' ? 'NETFLIX SERIES' : 'FEATURED FILM'}</p><h1>{title.title}</h1><p className="title-meta">{title.year} · {title.rating} · {title.genre}</p><p>{title.description}</p>{title.trailerId && <a className="primary" href={`https://www.youtube.com/watch?v=${title.trailerId}`} target="_blank" rel="noreferrer">▶ Watch trailer</a>}<button className="secondary" onClick={() => toggle(movie.id)}>{inList ? '✓ In My List' : '+ My List'}</button></div></section><section className="title-details"><img src={title.image} alt={`${title.title} poster`} /><div><h2>About {title.title}</h2><p>{title.description}</p><p className="title-cast">{title.type === 'series' ? `${title.seasons || 1} season${(title.seasons || 1) === 1 ? '' : 's'} available` : 'Movie'} · {title.genre}</p></div></section>{title.type === 'series' && <section className="title-episodes"><div className="episode-heading"><h2>Episodes</h2><select value={season} onChange={(event) => setSeason(Number(event.target.value))}>{Array.from({ length: title.seasons || 1 }, (_, index) => <option key={index + 1} value={index + 1}>Season {index + 1}</option>)}</select></div>{episodeList.map((episode, index) => <article className="title-episode" key={`${episode.id || episode.name}-${index}`}><span>{index + 1}</span><div><h3>{episode.name}</h3><small>{episode.runtime || 45}m</small><p>{episode.overview || 'Continue the story in this episode.'}</p></div><b>▶</b></article>)}</section>}<footer>Streaming-clone portfolio project. Movie and TV data provided by TMDB.</footer></main>
+}
 
 function MovieModal({ movie, close, inList, toggle }) {
   const [season, setSeason] = useState(1)
