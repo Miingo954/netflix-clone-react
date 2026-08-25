@@ -68,7 +68,7 @@ function StreamingApp() {
   const [apiMovies, setApiMovies] = useState([])
   const [apiStatus, setApiStatus] = useState('')
   const [trailerIndex, setTrailerIndex] = useState(0)
-  const [muted, setMuted] = useState(true)
+  const [muted, setMuted] = useState(false)
   const [search, setSearch] = useState('')
   const [profileOpen, setProfileOpen] = useState(false)
   const [customMovies, setCustomMovies] = useState([])
@@ -185,7 +185,7 @@ function TitleLandingPage({ movie, back, inList, toggle }) {
   const [title, setTitle] = useState(movie)
   const [season, setSeason] = useState(1)
   const [episodes, setEpisodes] = useState(movie.episodes || [])
-  const [titleMuted, setTitleMuted] = useState(true)
+  const [titleMuted, setTitleMuted] = useState(false)
 
   useEffect(() => {
     setTitle(movie)
