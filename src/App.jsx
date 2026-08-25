@@ -4,6 +4,7 @@ import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndP
 import { addDoc, collection, doc, onSnapshot, setDoc } from 'firebase/firestore'
 import { auth, db } from './firebase'
 import './App.css'
+import './guest.css'
 
 const TMDB_URL = 'https://api.themoviedb.org/3'
 const tmdbToken = import.meta.env.VITE_TMDB_READ_TOKEN
@@ -49,6 +50,7 @@ function StreamingApp() {
   const navigate = useNavigate()
   const location = useLocation()
   const [user, setUser] = useState(null)
+  const [guest, setGuest] = useState(false)
   const [register, setRegister] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -79,7 +81,7 @@ function StreamingApp() {
     }, () => { /* The app continues to work until the database is enabled. */ })
   }, [user])
   useEffect(() => {
-    if (!user || !tmdbToken) return
+    if ((!user && !guest) || !tmdbToken) return
     async function loadMovies() {
       setApiStatus('Loading live movies and TV shows…')
       try {
@@ -87,12 +89,14 @@ function StreamingApp() {
         const movies = popularMovies.results.slice(0, 10).map((item) => toTmdbMovie(item, 'movie'))
         const seriesResults = popularSeries.results.slice(0, 10).map((item) => toTmdbMovie(item, 'series'))
         const trendingResults = trending.results.slice(0, 6).filter((item) => item.media_type === 'movie' || item.media_type === 'tv').map((item) => toTmdbMovie(item, item.media_type === 'tv' ? 'series' : 'movie'))
-        setApiMovies([...trendingResults, ...movies, ...seriesResults])
+        const uniqueTitles = [...trendingResults, ...movies, ...seriesResults]
+          .filter((title, index, titles) => titles.findIndex((item) => item.id === title.id) === index)
+        setApiMovies(uniqueTitles)
         setApiStatus('Live movies and TV series powered by TMDB')
       } catch { setApiStatus('Live titles are unavailable right now — showing the demo collection.') }
     }
     loadMovies()
-  }, [user])
+  }, [user, guest])
 
   async function handleAuth(event) {
     event.preventDefault(); setError(''); setLoading(true)
@@ -137,7 +141,7 @@ function StreamingApp() {
     if (routeMovie) setSelected((current) => current?.id === routeId ? current : routeMovie)
   }, [location.pathname, allMovies])
 
-  if (!user) return <main className="auth-page"><header><strong>NETFLIX</strong></header><form className="auth-card" onSubmit={handleAuth}><h1>{register ? 'Create your account' : 'Sign in'}</h1><input type="email" placeholder="Email address" value={email} onChange={(event) => setEmail(event.target.value)} required /><input type="password" minLength="6" placeholder="Password (6+ characters)" value={password} onChange={(event) => setPassword(event.target.value)} required />{error && <p className="form-error">{error}</p>}<button className="primary" disabled={loading}>{loading ? 'Please wait…' : register ? 'Create account' : 'Sign in'}</button><p>{register ? 'Already have an account?' : 'New to Netflix?'} <button type="button" className="text-button" onClick={() => setRegister(!register)}>{register ? 'Sign in' : 'Create one'}</button></p></form></main>
+  if (!user && !guest) return <main className="auth-page"><header><strong>NETFLIX</strong></header><form className="auth-card" onSubmit={handleAuth}><h1>{register ? 'Create your account' : 'Sign in'}</h1><input type="email" placeholder="Email address" value={email} onChange={(event) => setEmail(event.target.value)} required /><input type="password" minLength="6" placeholder="Password (6+ characters)" value={password} onChange={(event) => setPassword(event.target.value)} required />{error && <p className="form-error">{error}</p>}<button className="primary" disabled={loading}>{loading ? 'Please wait…' : register ? 'Create account' : 'Sign in'}</button><button type="button" className="guest-button" onClick={() => setGuest(true)}>Browse as guest</button><p>{register ? 'Already have an account?' : 'New to Netflix?'} <button type="button" className="text-button" onClick={() => setRegister(!register)}>{register ? 'Sign in' : 'Create one'}</button></p></form></main>
 
   if (location.pathname === '/admin') return <AdminPanel user={user} close={() => navigate('/')} />
 

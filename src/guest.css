@@ -1,0 +1,17 @@
+.auth-card .guest-button {
+  width: 100%;
+  margin: 0 0 18px;
+  padding: 11px 20px;
+  border: 1px solid #8d8d8d;
+  border-radius: 4px;
+  background: transparent;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-card .guest-button:hover,
+.auth-card .guest-button:focus-visible {
+  border-color: #fff;
+  background: rgba(255, 255, 255, .12);
+}
