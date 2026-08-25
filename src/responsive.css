@@ -9,6 +9,11 @@
   margin: 24px auto;
 }
 
+/* The hero itself acts as a title link; its controls stay out of the way. */
+.video-hero .hero-video {
+  pointer-events: none;
+}
+
 .video-modal {
   margin: max(24px, 10vh) auto;
 }

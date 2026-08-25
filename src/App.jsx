@@ -142,6 +142,16 @@ function StreamingApp() {
   const previousTrailer = () => setTrailerIndex((index) => (index - 1 + trailers.length) % trailers.length)
 
   useEffect(() => {
+    const hero = document.querySelector('.video-hero')
+    function openFeaturedTrailer(event) {
+      if (event.target.closest('button, a')) return
+      setSelected({ ...feature, isTrailer: true })
+    }
+    hero?.addEventListener('click', openFeaturedTrailer)
+    return () => hero?.removeEventListener('click', openFeaturedTrailer)
+  }, [feature])
+
+  useEffect(() => {
     const routeId = location.pathname.split('/')[2]
     if (!routeId) return
     const routeMovie = allMovies.find((movie) => movie.id === routeId)
