@@ -1,0 +1,8 @@
+/* Keep route trailers clean: no poster artwork is visible behind the video. */
+.title-hero-page:has(.title-trailer) {
+  background-image: linear-gradient(180deg, #050505 0%, #080808 100%) !important;
+}
+
+.title-hero-page:has(.title-trailer) .title-trailer {
+  opacity: 1;
+}

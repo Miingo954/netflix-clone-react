@@ -7,6 +7,7 @@ import './App.css'
 import './guest.css'
 import './responsive.css'
 import './title-page.css'
+import './trailer-cleanup.css'
 
 const TMDB_URL = 'https://api.themoviedb.org/3'
 const tmdbToken = import.meta.env.VITE_TMDB_READ_TOKEN
