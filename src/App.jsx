@@ -160,9 +160,9 @@ function StreamingApp() {
   const series = allMovies.filter((movie) => movie.type === 'series')
   const outerBanks = series.find((movie) => movie.title === 'Outer Banks')
   const familyGuy = series.find((movie) => movie.title === 'Family Guy')
-  const bingeSeries = [outerBanks, familyGuy, ...series].filter((movie, index, titles) => movie && titles.findIndex((item) => item.id === movie.id) === index)
+  const bingeSeries = [outerBanks, familyGuy, ...series].filter((movie, index, titles) => movie && titles.findIndex((item) => item?.id === movie.id) === index)
   const dramaAndAction = [...movieOnly, ...series].filter((movie) => !['Family Guy', 'The Simpsons'].includes(movie.title)).slice(0, 10)
-  const comedyAndAnimation = [familyGuy, ...series.filter((movie) => /comedy|animation/i.test(movie.genre || ''))].filter((movie, index, titles) => movie && titles.findIndex((item) => item.id === movie.id) === index)
+  const comedyAndAnimation = [familyGuy, ...series.filter((movie) => /comedy|animation/i.test(movie.genre || ''))].filter((movie, index, titles) => movie && titles.findIndex((item) => item?.id === movie.id) === index)
   const savedMovies = allMovies.filter((movie) => myList.includes(movie.id))
   const searchResults = search.trim() ? allMovies.filter((movie) => movie.title.toLowerCase().includes(search.trim().toLowerCase())) : []
   const nextTrailer = () => setTrailerIndex((index) => (index + 1) % trailers.length)
