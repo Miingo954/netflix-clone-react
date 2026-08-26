@@ -11,7 +11,20 @@ import './trailer-cleanup.css'
 
 const TMDB_URL = 'https://api.themoviedb.org/3'
 const tmdbToken = import.meta.env.VITE_TMDB_READ_TOKEN
-const excludedTitles = new Set(['Tagesschau', 'The Tonight Show Starring Jimmy Fallon', 'Watch What Happens Live with Andy Cohen', 'Paradise Hotel'])
+const TRAILER_DISPLAY_MS = 78000
+const excludedTitles = new Set([
+  'Tagesschau',
+  'The Tonight Show Starring Jimmy Fallon',
+  'Watch What Happens Live with Andy Cohen',
+  'Paradise Hotel',
+  'Toy Story 5',
+  'Toy Story',
+  'Moana',
+  'Frozen',
+  'The Lion King',
+  'Lilo & Stitch',
+  'Mufasa: The Lion King',
+])
 
 function isStreamworthy(item) {
   return !excludedTitles.has(item.title || item.name)
@@ -93,11 +106,20 @@ function StreamingApp() {
     async function loadMovies() {
       setApiStatus('Loading live movies and TV shows…')
       try {
-        const [popularMovies, popularSeries, trending] = await Promise.all([tmdbRequest('/movie/popular'), tmdbRequest('/tv/popular'), tmdbRequest('/trending/all/week')])
+        const [popularMovies, popularSeries, topRatedSeries, trending, outerBanks, familyGuy] = await Promise.all([
+          tmdbRequest('/movie/popular'),
+          tmdbRequest('/tv/popular'),
+          tmdbRequest('/tv/top_rated'),
+          tmdbRequest('/trending/all/week'),
+          tmdbRequest('/tv/100757'),
+          tmdbRequest('/tv/1434'),
+        ])
         const movies = popularMovies.results.filter(isStreamworthy).slice(0, 10).map((item) => toTmdbMovie(item, 'movie'))
         const seriesResults = popularSeries.results.filter(isStreamworthy).slice(0, 10).map((item) => toTmdbMovie(item, 'series'))
+        const topSeries = topRatedSeries.results.filter(isStreamworthy).slice(0, 10).map((item) => toTmdbMovie(item, 'series'))
         const trendingResults = trending.results.filter((item) => (item.media_type === 'movie' || item.media_type === 'tv') && isStreamworthy(item)).slice(0, 6).map((item) => toTmdbMovie(item, item.media_type === 'tv' ? 'series' : 'movie'))
-        const uniqueTitles = [...trendingResults, ...movies, ...seriesResults]
+        const requestedSeries = [outerBanks, familyGuy].filter(isStreamworthy).map((item) => toTmdbMovie(item, 'series'))
+        const uniqueTitles = [...requestedSeries, ...trendingResults, ...movies, ...seriesResults, ...topSeries]
           .filter((title, index, titles) => titles.findIndex((item) => item.id === title.id) === index)
         setApiMovies(uniqueTitles)
         setApiStatus('Live movies and TV series powered by TMDB')
@@ -133,17 +155,21 @@ function StreamingApp() {
     return nextList
   })
   const feature = trailers[trailerIndex]
-  const allMovies = useMemo(() => [...customMovies, ...(apiMovies.length ? apiMovies : [...fallbackMovies, ...fallbackSeries])], [customMovies, apiMovies])
+  const allMovies = useMemo(() => [...customMovies, ...(apiMovies.length ? apiMovies : [...fallbackMovies, ...fallbackSeries])].filter(isStreamworthy), [customMovies, apiMovies])
   const movieOnly = allMovies.filter((movie) => movie.type !== 'series')
   const series = allMovies.filter((movie) => movie.type === 'series')
-  const films = [movieOnly[0], series[0], movieOnly[1], series[1], movieOnly[2], series[2], movieOnly[3], series[3]].filter(Boolean)
+  const outerBanks = series.find((movie) => movie.title === 'Outer Banks')
+  const familyGuy = series.find((movie) => movie.title === 'Family Guy')
+  const bingeSeries = [outerBanks, familyGuy, ...series].filter((movie, index, titles) => movie && titles.findIndex((item) => item.id === movie.id) === index)
+  const dramaAndAction = [...movieOnly, ...series].filter((movie) => !['Family Guy', 'The Simpsons'].includes(movie.title)).slice(0, 10)
+  const comedyAndAnimation = [familyGuy, ...series.filter((movie) => /comedy|animation/i.test(movie.genre || ''))].filter((movie, index, titles) => movie && titles.findIndex((item) => item.id === movie.id) === index)
   const savedMovies = allMovies.filter((movie) => myList.includes(movie.id))
   const searchResults = search.trim() ? allMovies.filter((movie) => movie.title.toLowerCase().includes(search.trim().toLowerCase())) : []
   const nextTrailer = () => setTrailerIndex((index) => (index + 1) % trailers.length)
   const previousTrailer = () => setTrailerIndex((index) => (index - 1 + trailers.length) % trailers.length)
 
   useEffect(() => {
-    const carouselTimer = window.setTimeout(() => setTrailerIndex((index) => (index + 1) % trailers.length), 10000)
+    const carouselTimer = window.setTimeout(() => setTrailerIndex((index) => (index + 1) % trailers.length), TRAILER_DISPLAY_MS)
     return () => window.clearTimeout(carouselTimer)
   }, [trailerIndex])
 
@@ -192,7 +218,7 @@ function StreamingApp() {
   const routedMovie = routeId ? allMovies.find((movie) => movie.id === routeId) || (routeId === `featured-${feature.videoId}` ? { ...feature, id: routeId, type: 'movie', year: feature.detail?.slice(0, 4) || 'New', rating: 'PG-13', genre: feature.detail?.split('·').slice(1).join('·').trim() || 'Featured', image: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=900&q=85', trailerId: feature.videoId } : null) : null
   if (routedMovie) return <TitleLandingPage movie={selected?.id === routeId ? selected : routedMovie} back={() => { setSelected(null); navigate('/') }} inList={myList.includes(routedMovie.id)} toggle={toggle} />
 
-  return <main className="app-shell"><header className="nav"><strong>NETFLIX</strong><nav><a href="#home">Home</a><a href="#new">New & Popular</a><a href="#list">My List</a></nav><form className="search" onSubmit={(event) => event.preventDefault()}><span>⌕</span><input aria-label="Search titles" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Titles, people, genres" />{search && <button type="button" aria-label="Clear search" onClick={() => setSearch('')}>×</button>}</form><div className="profile"><button className="profile-button" onClick={() => setProfileOpen(!profileOpen)} aria-expanded={profileOpen}><span>N</span>⌄</button>{profileOpen && <div className="profile-menu"><p>{user.email}</p><button onClick={() => { navigate('/admin'); setProfileOpen(false) }}>Content admin</button><button onClick={() => signOut(auth)}>Sign out of Netflix</button></div>}</div></header>{search && <Row title={`Search results for “${search}”`} movies={searchResults} select={openMovie} empty="No matching titles in the current collection." />}<section className="video-hero" id="home"><iframe key={`${feature.videoId}-${muted}`} className="hero-video" title={`${feature.title} video`} src={`https://www.youtube-nocookie.com/embed/${feature.videoId}?autoplay=1&mute=${muted ? 1 : 0}&controls=0&rel=0&cc_load_policy=0&playsinline=1`} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen /><div className="hero-shade" /><div className="hero-copy"><p className="eyebrow">FEATURED TRAILER</p><h1>{feature.title}</h1><p className="feature-meta">{feature.detail}</p><p>{feature.description}</p><button className="primary" onClick={() => setSelected({ ...feature, isTrailer: true })}>▶ Play</button><button className="secondary" onClick={() => setMuted(!muted)}>{muted ? '🔊 Turn sound on' : '🔇 Mute'}</button><button className="secondary" onClick={nextTrailer}>Next suggestion ›</button></div><div className="trailer-controls"><button aria-label="Previous trailer" onClick={previousTrailer}>‹</button>{trailers.map((trailer, index) => <button className={index === trailerIndex ? 'active-dot' : ''} aria-label={`Show ${trailer.title}`} key={trailer.videoId} onClick={() => setTrailerIndex(index)} />)}<button aria-label="Next trailer" onClick={nextTrailer}>›</button></div></section><Row title="Popular Movies" movies={films.slice(0, 8)} select={openMovie} /><section className="api-note" id="new"><span className="live-dot" /> {apiStatus || 'Sign in to load live content from OMDb.'}</section><Row title="Binge-Worthy Series" movies={series} select={openMovie} empty="Series will appear here when the live catalog finishes loading." /><Row id="list" title="My List" movies={savedMovies} select={openMovie} empty="Add a title using the + My List button." /><footer>Built with React, JavaScript, CSS, Firebase Authentication, and the OMDb API.</footer>{selected && <MovieModal movie={selected} close={() => { setSelected(null); navigate('/') }} inList={myList.includes(selected.id || selected.videoId)} toggle={toggle} />}</main>
+  return <main className="app-shell"><header className="nav"><strong>NETFLIX</strong><nav><a href="#home">Home</a><a href="#new">New & Popular</a><a href="#list">My List</a></nav><form className="search" onSubmit={(event) => event.preventDefault()}><span>⌕</span><input aria-label="Search titles" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Titles, people, genres" />{search && <button type="button" aria-label="Clear search" onClick={() => setSearch('')}>×</button>}</form><div className="profile"><button className="profile-button" onClick={() => setProfileOpen(!profileOpen)} aria-expanded={profileOpen}><span>N</span>⌄</button>{profileOpen && <div className="profile-menu"><p>{user?.email || 'Guest profile'}</p>{user && <button onClick={() => { navigate('/admin'); setProfileOpen(false) }}>Content admin</button>}<button onClick={() => user ? signOut(auth) : setGuest(false)}>Sign out of Netflix</button></div>}</div></header>{search && <Row title={`Search results for “${search}”`} movies={searchResults} select={openMovie} empty="No matching titles in the current collection." />}<section className="video-hero" id="home"><iframe key={`${feature.videoId}-${muted}`} className="hero-video" title={`${feature.title} video`} src={`https://www.youtube-nocookie.com/embed/${feature.videoId}?autoplay=1&mute=${muted ? 1 : 0}&controls=0&rel=0&cc_load_policy=0&playsinline=1`} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen /><div className="hero-shade" /><div className="hero-copy"><p className="eyebrow">FEATURED TRAILER</p><h1>{feature.title}</h1><p className="feature-meta">{feature.detail}</p><p>{feature.description}</p><button className="primary" onClick={() => setSelected({ ...feature, isTrailer: true })}>▶ Play</button><button className="secondary" onClick={() => setMuted(!muted)}>{muted ? '🔊 Turn sound on' : '🔇 Mute'}</button><button className="secondary" onClick={nextTrailer}>Next suggestion ›</button></div><div className="trailer-controls"><button aria-label="Previous trailer" onClick={previousTrailer}>‹</button>{trailers.map((trailer, index) => <button className={index === trailerIndex ? 'active-dot' : ''} aria-label={`Show ${trailer.title}`} key={trailer.videoId} onClick={() => setTrailerIndex(index)} />)}<button aria-label="Next trailer" onClick={nextTrailer}>›</button></div></section><Row title="Popular Movies" movies={movieOnly.slice(0, 10)} select={openMovie} /><section className="api-note" id="new"><span className="live-dot" /> {apiStatus || 'Sign in to load live content from TMDB.'}</section><Row title="Binge-Worthy Series" movies={bingeSeries.slice(0, 12)} select={openMovie} empty="Series will appear here when the live catalog finishes loading." /><Row title="Action, Drama & Adventure" movies={dramaAndAction} select={openMovie} /><Row title="Comedy & Animation" movies={comedyAndAnimation.slice(0, 10)} select={openMovie} empty="More comedies are loading now." /><Row id="list" title="My List" movies={savedMovies} select={openMovie} /><footer>Built with React, JavaScript, CSS, Firebase Authentication, and the TMDB API.</footer>{selected && <MovieModal movie={selected} close={() => { setSelected(null); navigate('/') }} inList={myList.includes(selected.id || selected.videoId)} toggle={toggle} />}</main>
 }
 
 function Row({ title, movies, select, empty, id }) { return <section className="row" id={id}><h2>{title}</h2>{movies.length ? <div className="cards">{movies.map((movie) => <button className="movie-card" key={movie.id} onClick={() => select(movie)}><img src={movie.image} alt={`${movie.title} poster`} /><span>{movie.title}</span></button>)}</div> : empty && title !== 'My List' ? <p className="empty">{empty}</p> : null}</section> }
