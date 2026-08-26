@@ -47,6 +47,7 @@ const fallbackSeries = [
 // Open-animation releases: used here instead of copying Netflix footage.
 const trailers = [
   { title: 'Spider-Man: Across the Spider-Verse', detail: '2023 · Action · Animation', description: 'Miles Morales is launched across the Multiverse, where he must decide what it truly means to be a hero.', videoId: 'cqGjhVJWtEg' },
+  { title: 'Outer Banks', detail: '2023 · TV-MA · Adventure', description: 'The Pogues chase a legendary treasure while navigating friendship, family secrets, and dangerous rivals along the Carolina coast.', videoId: 'SuqZPVPxsZE' },
   { title: 'The Fantastic Four: First Steps', detail: '2025 · Sci-Fi · Adventure', description: 'Marvel’s first family is pulled into a cosmic crisis that tests their powers, their bond, and the future of their world.', videoId: 'pAsmrKyMqaA' },
   { title: 'Superman', detail: '2025 · Action · Drama', description: 'A young Clark Kent learns to balance his extraordinary powers with the compassion that makes him human.', videoId: '2woCZg5QdVE' },
 ]
