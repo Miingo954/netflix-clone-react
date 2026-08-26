@@ -8,3 +8,11 @@
 .movie-modal .ratings{display:flex;align-items:center;gap:8px;padding:13px 0;margin:18px 0;border-top:1px solid #323232;border-bottom:1px solid #323232}.movie-modal .ratings span{font-size:.74rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#aaa;margin-right:auto}.movie-modal .ratings button{width:auto;height:32px;padding:0 11px;border:1px solid #555;border-radius:4px;background:transparent;color:#fff;font-size:0;transition:background .18s,border-color .18s;color:#fff}.movie-modal .ratings button::after{font-size:.72rem;font-weight:700}.movie-modal .ratings button:nth-of-type(1)::after{content:'Not for me'}.movie-modal .ratings button:nth-of-type(2)::after{content:'Like'}.movie-modal .ratings button:nth-of-type(3)::after{content:'Love it'}.movie-modal .ratings button:hover{border-color:#fff;background:#292929;transform:none}.movie-modal .ratings .selected-rating{background:#e50914;border-color:#e50914;transform:none}
 .video-hero .hero-copy h1{letter-spacing:0;word-spacing:.12em;text-wrap:balance}
 .video-hero .hero-video{pointer-events:none}
+
+.row-carousel { position: relative; }
+.row-scroll-control { position: absolute; top: 50%; z-index: 2; width: 42px; height: 76px; border: 0; color: #fff; background: rgba(0,0,0,.54); font-size: 2.3rem; line-height: 1; opacity: 0; pointer-events: none; transform: translateY(-50%); transition: opacity .2s ease, background .2s ease; }
+.row-scroll-control:hover { background: rgba(0,0,0,.84); }
+.row-scroll-control--previous { left: 0; border-radius: 0 5px 5px 0; }
+.row-scroll-control--next { right: 0; border-radius: 5px 0 0 5px; }
+.row-carousel:hover .row-scroll-control, .row-carousel:focus-within .row-scroll-control { opacity: 1; pointer-events: auto; }
+@media (hover: none), (pointer: coarse) { .row-scroll-control { display: none; } }
