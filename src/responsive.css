@@ -24,24 +24,43 @@
 }
 
 .video-hero .hero-video {
-  animation: trailer-slide-in 1.05s cubic-bezier(.2,.85,.25,1) both;
+  animation: trailer-slide-in 1.05s cubic-bezier(0.2, 0.85, 0.25, 1) both;
   clip-path: inset(0 0 0 0);
 }
 
 @keyframes trailer-slide-in {
-  from { opacity: 0; clip-path: inset(0 0 0 100%); transform: scale(1.18) translateX(9%); }
-  to { opacity: 1; transform: scale(1.23) translateX(0); }
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 0 100%);
+    transform: scale(1.18) translateX(9%);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.23) translateX(0);
+  }
 }
 
 .video-hero .hero-copy {
-  animation: carousel-copy 78s cubic-bezier(.2,.85,.25,1) infinite;
+  animation: carousel-copy 78s cubic-bezier(0.2, 0.85, 0.25, 1) infinite;
 }
 
 @keyframes carousel-copy {
-  0% { opacity: 0; transform: translateX(-38px); }
-  7% { opacity: 1; transform: translateX(0); }
-  92% { opacity: 1; transform: translateX(0); }
-  100% { opacity: 0; transform: translateX(24px); }
+  0% {
+    opacity: 0;
+    transform: translateX(-38px);
+  }
+  7% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  92% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(24px);
+  }
 }
 
 .video-hero.is-transitioning::after {
@@ -50,22 +69,37 @@
   inset: 0;
   z-index: 4;
   pointer-events: none;
-  background: linear-gradient(105deg, transparent 22%, rgba(229, 9, 20, .78) 45%, rgba(255,255,255,.22) 50%, rgba(229, 9, 20, .78) 55%, transparent 78%);
+  background: linear-gradient(
+    105deg,
+    transparent 22%,
+    rgba(229, 9, 20, 0.78) 45%,
+    rgba(255, 255, 255, 0.22) 50%,
+    rgba(229, 9, 20, 0.78) 55%,
+    transparent 78%
+  );
   transform: translateX(-120%);
-  animation: cinema-wipe .9s cubic-bezier(.6,0,.2,1) both;
+  animation: cinema-wipe 0.9s cubic-bezier(0.6, 0, 0.2, 1) both;
 }
 
 .video-hero.is-transitioning .hero-copy {
-  animation: title-arrival .7s .16s cubic-bezier(.2,.85,.25,1) both;
+  animation: title-arrival 0.7s 0.16s cubic-bezier(0.2, 0.85, 0.25, 1) both;
 }
 
 @keyframes cinema-wipe {
-  to { transform: translateX(120%); }
+  to {
+    transform: translateX(120%);
+  }
 }
 
 @keyframes title-arrival {
-  from { opacity: 0; transform: translateY(24px) scale(.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @media (max-width: 700px) {
@@ -74,8 +108,14 @@
   }
 
   @keyframes trailer-slide-in-mobile {
-    from { opacity: 0; transform: scale(2.05) translateX(5%); }
-    to { opacity: 1; transform: scale(2.15) translateX(0); }
+    from {
+      opacity: 0;
+      transform: scale(2.05) translateX(5%);
+    }
+    to {
+      opacity: 1;
+      transform: scale(2.15) translateX(0);
+    }
   }
 }
 
@@ -107,11 +147,11 @@
 
   .nav nav a {
     padding: 12px 4px;
-    font-size: .95rem;
+    font-size: 0.95rem;
     border-top: 1px solid #252525;
   }
 
-  .nav:has(.profile-button[aria-expanded="true"]) nav {
+  .nav:has(.profile-button[aria-expanded='true']) nav {
     display: flex;
   }
 
@@ -153,7 +193,7 @@
     padding: 20px;
   }
 
-  .movie-modal>img {
+  .movie-modal > img {
     max-height: none;
   }
 }
