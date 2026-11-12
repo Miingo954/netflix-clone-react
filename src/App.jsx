@@ -15,6 +15,7 @@ import './title-page.css'
 import './trailer-cleanup.css'
 import './mobile.css'
 import ControlIcon from './ControlIcon'
+import TrailerPlayer from './TrailerPlayer'
 
 const TMDB_URL = 'https://api.themoviedb.org/3'
 const tmdbToken = import.meta.env.VITE_TMDB_READ_TOKEN
@@ -224,6 +225,7 @@ function StreamingApp() {
   const [apiStatus, setApiStatus] = useState('')
   const [trailerIndex, setTrailerIndex] = useState(0)
   const [muted, setMuted] = useState(false)
+  const heroPlayer = useRef(null)
   const [search, setSearch] = useState('')
   const [profileOpen, setProfileOpen] = useState(false)
   const [customMovies, setCustomMovies] = useState([])
@@ -594,13 +596,12 @@ function StreamingApp() {
         />
       )}
       <section className="video-hero" id="home">
-        <iframe
-          key={`${feature.videoId}-${muted}`}
+        <TrailerPlayer
+          ref={heroPlayer}
+          videoId={feature.videoId}
           className="hero-video"
           title={`${feature.title} video`}
-          src={`https://www.youtube-nocookie.com/embed/${feature.videoId}?autoplay=1&mute=${muted ? 1 : 0}&controls=0&rel=0&cc_load_policy=0&playsinline=1`}
-          allow="autoplay; encrypted-media; picture-in-picture"
-          allowFullScreen
+          onMutedChange={setMuted}
         />
         <div className="hero-shade" />
         <div className="hero-copy">
@@ -611,7 +612,7 @@ function StreamingApp() {
           <button className="primary" onClick={() => setSelected({ ...feature, isTrailer: true })}>
             <ControlIcon name="play" /> Play
           </button>
-          <button className="secondary" onClick={() => setMuted(!muted)}>
+          <button className="secondary" onClick={() => heroPlayer.current?.toggleSound()}>
             <ControlIcon name={muted ? 'muted' : 'sound'} /> {muted ? 'Turn sound on' : 'Mute'}
           </button>
           <button className="secondary" onClick={nextTrailer}>
@@ -718,6 +719,7 @@ function TitleLandingPage({ movie, back, inList, toggle }) {
   const [season, setSeason] = useState(1)
   const [episodes, setEpisodes] = useState(movie.episodes || [])
   const [titleMuted, setTitleMuted] = useState(false)
+  const titlePlayer = useRef(null)
 
   useEffect(() => {
     if (!movie.tmdbID || !tmdbToken) return
@@ -759,16 +761,6 @@ function TitleLandingPage({ movie, back, inList, toggle }) {
       .catch(() => {})
   }, [title.tmdbID, title.type, season])
 
-  useEffect(() => {
-    const trailer = document.querySelector('.title-trailer')
-    if (!trailer) return
-    const source = new URL(trailer.src)
-    source.searchParams.set('cc_load_policy', '0')
-    source.searchParams.set('iv_load_policy', '3')
-    source.searchParams.set('modestbranding', '1')
-    trailer.src = source.toString()
-  }, [title.trailerId, titleMuted])
-
   const episodeList = episodes.length
     ? episodes
     : ['A new beginning', 'The unexpected signal', 'Into the unknown'].map((name, index) => ({
@@ -792,12 +784,12 @@ function TitleLandingPage({ movie, back, inList, toggle }) {
         }}
       >
         {title.trailerId && (
-          <iframe
-            key={`${title.trailerId}-${titleMuted}`}
+          <TrailerPlayer
+            ref={titlePlayer}
+            videoId={title.trailerId}
             className="title-trailer"
             title={`${title.title} trailer`}
-            src={`https://www.youtube-nocookie.com/embed/${title.trailerId}?autoplay=1&mute=${titleMuted ? 1 : 0}&controls=0&rel=0&playsinline=1`}
-            allow="autoplay; encrypted-media; picture-in-picture"
+            onMutedChange={setTitleMuted}
           />
         )}
         <div className="title-hero-content">
@@ -809,7 +801,7 @@ function TitleLandingPage({ movie, back, inList, toggle }) {
           <p>{title.description}</p>
           {title.trailerId && (
             <>
-              <button className="primary" onClick={() => setTitleMuted(!titleMuted)}>
+              <button className="primary" onClick={() => titlePlayer.current?.toggleSound()}>
                 <ControlIcon name={titleMuted ? 'muted' : 'sound'} /> {titleMuted ? 'Turn sound on' : 'Mute trailer'}
               </button>
               <a
@@ -917,12 +909,7 @@ function MovieModal({ movie, close, inList, toggle }) {
           <button className="close" onClick={close}>
             ×
           </button>
-          <iframe
-            title={`${movie.title} video`}
-            src={`https://www.youtube-nocookie.com/embed/${movie.videoId}?autoplay=1&mute=0&controls=0&rel=0&cc_load_policy=0&playsinline=1`}
-            allow="autoplay; encrypted-media; picture-in-picture"
-            allowFullScreen
-          />
+          <TrailerPlayer videoId={movie.videoId} title={`${movie.title} video`} controls />
         </article>
       </div>
     )
@@ -974,12 +961,11 @@ function MovieModal({ movie, close, inList, toggle }) {
             </button>
           </div>
           {movie.trailerId && (
-            <iframe
+            <TrailerPlayer
               className="inline-trailer"
+              videoId={movie.trailerId}
               title={`${movie.title} trailer`}
-              src={`https://www.youtube-nocookie.com/embed/${movie.trailerId}?autoplay=1&mute=0&rel=0&playsinline=1`}
-              allow="autoplay; encrypted-media; picture-in-picture"
-              allowFullScreen
+              controls
             />
           )}
           {movie.type === 'series' && (

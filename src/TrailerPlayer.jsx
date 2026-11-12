@@ -1,0 +1,89 @@
+import { useEffect, useEffectEvent, useImperativeHandle, useRef } from 'react'
+
+let apiPromise
+function loadYouTube() {
+  if (window.YT?.Player) return Promise.resolve(window.YT)
+  if (!apiPromise) {
+    apiPromise = new Promise((resolve) => {
+      const previousReady = window.onYouTubeIframeAPIReady
+      window.onYouTubeIframeAPIReady = () => {
+        previousReady?.()
+        resolve(window.YT)
+      }
+      const script = document.createElement('script')
+      script.src = 'https://www.youtube.com/iframe_api'
+      script.async = true
+      document.head.appendChild(script)
+    })
+  }
+  return apiPromise
+}
+
+// Own the iframe inside a host so API cleanup is safe with React Strict Mode.
+export default function TrailerPlayer({ ref, videoId, title, className, onMutedChange, controls = false }) {
+  const host = useRef(null)
+  const player = useRef(null)
+  const reportMuted = useEffectEvent((muted) => onMutedChange?.(muted))
+
+  useImperativeHandle(ref, () => ({
+    toggleSound() {
+      const current = player.current
+      if (!current?.getPlayerState) return
+      const wasMuted = current.isMuted()
+      if (wasMuted) {
+        current.unMute()
+        current.setVolume(100)
+        current.playVideo()
+      } else {
+        current.mute()
+      }
+      onMutedChange?.(!wasMuted)
+    },
+  }), [onMutedChange])
+
+  useEffect(() => {
+    let disposed = false
+    let instance
+    const container = host.current
+    const frame = document.createElement('iframe')
+    frame.className = className || ''
+    frame.title = title
+    frame.allow = 'autoplay; encrypted-media; picture-in-picture'
+    frame.allowFullscreen = true
+    frame.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=0&controls=${controls ? 1 : 0}&rel=0&cc_load_policy=0&iv_load_policy=3&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`
+    container.appendChild(frame)
+    loadYouTube().then((YT) => {
+      if (disposed) return
+      instance = new YT.Player(frame, {
+        events: {
+          onReady({ target }) {
+            if (disposed) return
+            player.current = target
+            target.unMute()
+            target.setVolume(100)
+            target.playVideo()
+            reportMuted(false)
+          },
+          onAutoplayBlocked({ target }) {
+            if (disposed || target.isMuted()) return
+            // Keep video moving if the browser refuses audible autoplay.
+            target.mute()
+            target.playVideo()
+            reportMuted(true)
+          },
+          onStateChange({ target, data }) {
+            if (!disposed && data === 1) reportMuted(target.isMuted())
+          },
+        },
+      })
+    })
+    return () => {
+      disposed = true
+      player.current = null
+      instance?.destroy()
+      container.replaceChildren()
+    }
+  }, [videoId, title, className, controls])
+
+  return <span ref={host} style={{ display: 'contents' }} />
+}
