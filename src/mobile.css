@@ -1,0 +1,55 @@
+/* Phone refinements; the desktop presentation remains in the existing styles. */
+.mobile-account-action { display: none; }
+@media (max-width: 700px) {
+  .app-shell, .title-page, .admin-page { min-width: 0; }
+  .nav { padding: 10px 20px 12px; gap: 10px; }
+  .nav strong { font-size: 1.4rem; }
+  .profile-button { min-width: 44px; min-height: 44px; }
+  .profile-button::after { content: '☰'; font-size: 1.4rem; }
+  .nav:has(.profile-button[aria-expanded='true']) .profile-button::after { content: '×'; font-size: 2rem; }
+  .nav .search { display: flex; order: 3; flex: 0 0 100%; width: 100%; height: 42px; margin: 0; border-color: #494949; border-radius: 6px; }
+  .search input { font-size: 16px; }
+  .nav nav { order: 4; max-height: 55svh; overflow-y: auto; padding-bottom: 0; }
+  .nav nav a { min-height: 44px; display: flex; align-items: center; }
+  .nav .mobile-account-action { display: block; min-height: 44px; padding: 12px 4px; border: 0; border-top: 1px solid #333; background: transparent; color: #bbb; text-align: left; font-size: .95rem; }
+  .video-hero { display: block; min-height: 0; height: auto; padding: calc(56.25vw + 18px) 20px 72px; }
+  .video-hero .hero-video { inset: 0 auto auto 0; width: 100%; height: 56.25vw; transform: none; animation: none; clip-path: none; }
+  .video-hero .hero-shade { background: linear-gradient(180deg, transparent 0, transparent 35vw, #080808 57vw); }
+  .video-hero .hero-copy { max-width: none; animation: none; }
+  .hero-copy h1 { font-size: clamp(1.85rem, 8vw, 2.6rem); line-height: 1.08; letter-spacing: -.035em; overflow-wrap: anywhere; margin: 10px 0 12px; }
+  .hero-copy > p:not(.eyebrow) { font-size: .94rem; line-height: 1.55; }
+  .hero-copy .feature-meta { font-size: .76rem !important; }
+  .hero-copy .primary, .hero-copy .secondary { min-height: 44px; padding: 11px 14px; font-size: .84rem; margin: 8px 8px 0 0; }
+  .trailer-controls { right: 20px; left: 20px; bottom: 16px; justify-content: center; gap: 4px; }
+  .trailer-controls button { width: 28px; height: 32px; border-radius: 4px; background: radial-gradient(circle, #777 3px, transparent 4px); }
+  .trailer-controls button.active-dot { background: radial-gradient(circle, #fff 4px, transparent 5px); }
+  .trailer-controls button:first-child, .trailer-controls button:last-child { width: 40px; height: 40px; }
+  .row { padding: 14px 20px 18px; scroll-margin-top: 130px; }
+  .row h2 { font-size: 1.15rem; line-height: 1.25; }
+  .app-shell .cards { gap: 10px; scroll-padding-inline: 0; }
+  .app-shell .movie-card { flex: 0 0 39vw; min-width: 0; }
+  .movie-card span { font-size: .78rem; line-height: 1.35; padding: 9px 8px; }
+  .movie-card:hover { transform: none; }
+  .row-scroll-control { display: none; }
+  .api-note { margin: 0; padding: 8px 20px; font-size: .7rem; line-height: 1.5; }
+  .title-nav { height: auto; min-height: 64px; padding: 10px 16px; flex-wrap: wrap; gap: 8px 12px; }
+  .title-nav strong { font-size: 1.2rem; }
+  .title-nav button { min-height: 44px; }
+  .title-hero-page { min-height: 0; padding: calc(56.25vw + 20px) 20px 30px; background-position: center top; background-size: auto 56.25vw; background-repeat: no-repeat; }
+  .title-trailer { height: 56.25vw; opacity: 1; }
+  .title-hero-content h1 { font-size: clamp(1.9rem, 8vw, 2.75rem); line-height: 1.1; }
+  .title-hero-content > p:not(.eyebrow) { font-size: .93rem; }
+  .title-details { align-items: start; gap: 14px; }
+  .title-details img { width: 86px; height: 129px; flex-basis: 86px; }
+  .title-details p { font-size: .88rem; line-height: 1.55; }
+  .episode-heading { flex-wrap: wrap; gap: 12px; }
+  .title-episode { display: grid; grid-template-columns: 20px minmax(0, 1fr); }
+  .title-episode b { grid-column: 2; padding: 0; font-size: .8rem; }
+  .title-episode h3 { font-size: .95rem; }
+  .title-episode p { font-size: .85rem; }
+  .auth-page { padding: 24px 16px; min-height: 100svh; }
+  .auth-card { width: 100%; max-width: 420px; padding: 28px 24px; margin: 0 auto; }
+  .auth-card input { font-size: 16px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .admin-form { padding: 20px; }
+}

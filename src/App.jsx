@@ -13,6 +13,7 @@ import './guest.css'
 import './responsive.css'
 import './title-page.css'
 import './trailer-cleanup.css'
+import './mobile.css'
 
 const TMDB_URL = 'https://api.themoviedb.org/3'
 const tmdbToken = import.meta.env.VITE_TMDB_READ_TOKEN
@@ -531,10 +532,13 @@ function StreamingApp() {
     <main className="app-shell">
       <header className="nav">
         <strong>NETFLIX</strong>
-        <nav>
+        <nav id="netflix-navigation" onClick={(event) => {
+          if (event.target.closest('a')) setProfileOpen(false)
+        }}>
           <a href="#home">Home</a>
           <a href="#new">New & Popular</a>
           <a href="#list">My List</a>
+          <button className="mobile-account-action" onClick={() => (user ? signOut(auth) : setGuest(false))}>Sign out</button>
         </nav>
         <form className="search" onSubmit={(event) => event.preventDefault()}>
           <span>⌕</span>
@@ -555,6 +559,8 @@ function StreamingApp() {
             className="profile-button"
             onClick={() => setProfileOpen(!profileOpen)}
             aria-expanded={profileOpen}
+            aria-label={profileOpen ? 'Close navigation and account menu' : 'Open navigation and account menu'}
+            aria-controls="netflix-navigation"
           >
             <span>N</span>⌄
           </button>
