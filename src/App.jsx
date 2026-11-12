@@ -223,7 +223,7 @@ function StreamingApp() {
   const [apiMovies, setApiMovies] = useState([])
   const [apiStatus, setApiStatus] = useState('')
   const [trailerIndex, setTrailerIndex] = useState(0)
-  const [muted, setMuted] = useState(true)
+  const [muted, setMuted] = useState(false)
   const [search, setSearch] = useState('')
   const [profileOpen, setProfileOpen] = useState(false)
   const [customMovies, setCustomMovies] = useState([])
@@ -717,7 +717,7 @@ function TitleLandingPage({ movie, back, inList, toggle }) {
   const [title, setTitle] = useState(movie)
   const [season, setSeason] = useState(1)
   const [episodes, setEpisodes] = useState(movie.episodes || [])
-  const [titleMuted, setTitleMuted] = useState(true)
+  const [titleMuted, setTitleMuted] = useState(false)
 
   useEffect(() => {
     if (!movie.tmdbID || !tmdbToken) return
@@ -919,7 +919,7 @@ function MovieModal({ movie, close, inList, toggle }) {
           </button>
           <iframe
             title={`${movie.title} video`}
-            src={`https://www.youtube-nocookie.com/embed/${movie.videoId}?autoplay=1&controls=0&rel=0&cc_load_policy=0&playsinline=1`}
+            src={`https://www.youtube-nocookie.com/embed/${movie.videoId}?autoplay=1&mute=0&controls=0&rel=0&cc_load_policy=0&playsinline=1`}
             allow="autoplay; encrypted-media; picture-in-picture"
             allowFullScreen
           />
@@ -977,7 +977,7 @@ function MovieModal({ movie, close, inList, toggle }) {
             <iframe
               className="inline-trailer"
               title={`${movie.title} trailer`}
-              src={`https://www.youtube-nocookie.com/embed/${movie.trailerId}?autoplay=0&rel=0&playsinline=1`}
+              src={`https://www.youtube-nocookie.com/embed/${movie.trailerId}?autoplay=1&mute=0&rel=0&playsinline=1`}
               allow="autoplay; encrypted-media; picture-in-picture"
               allowFullScreen
             />
