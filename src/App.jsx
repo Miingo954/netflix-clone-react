@@ -14,6 +14,7 @@ import './responsive.css'
 import './title-page.css'
 import './trailer-cleanup.css'
 import './mobile.css'
+import ControlIcon from './ControlIcon'
 
 const TMDB_URL = 'https://api.themoviedb.org/3'
 const tmdbToken = import.meta.env.VITE_TMDB_READ_TOKEN
@@ -608,10 +609,10 @@ function StreamingApp() {
           <p className="feature-meta">{feature.detail}</p>
           <p>{feature.description}</p>
           <button className="primary" onClick={() => setSelected({ ...feature, isTrailer: true })}>
-            ▶ Play
+            <ControlIcon name="play" /> Play
           </button>
           <button className="secondary" onClick={() => setMuted(!muted)}>
-            {muted ? '🔊 Turn sound on' : '🔇 Mute'}
+            <ControlIcon name={muted ? 'muted' : 'sound'} /> {muted ? 'Turn sound on' : 'Mute'}
           </button>
           <button className="secondary" onClick={nextTrailer}>
             Next suggestion ›
@@ -809,7 +810,7 @@ function TitleLandingPage({ movie, back, inList, toggle }) {
           {title.trailerId && (
             <>
               <button className="primary" onClick={() => setTitleMuted(!titleMuted)}>
-                {titleMuted ? '🔊 Turn sound on' : '🔇 Mute trailer'}
+                <ControlIcon name={titleMuted ? 'muted' : 'sound'} /> {titleMuted ? 'Turn sound on' : 'Mute trailer'}
               </button>
               <a
                 className="secondary title-watch-link"
@@ -817,7 +818,7 @@ function TitleLandingPage({ movie, back, inList, toggle }) {
                 target="_blank"
                 rel="noreferrer"
               >
-                ▶ Watch full trailer
+                <ControlIcon name="play" /> Watch full trailer
               </a>
             </>
           )}
@@ -865,7 +866,7 @@ function TitleLandingPage({ movie, back, inList, toggle }) {
                 <small>{episode.runtime || 45}m</small>
                 <p>{episode.overview || 'Continue the story in this episode.'}</p>
               </div>
-              <b>▶</b>
+              <b><ControlIcon name="play" /></b>
             </article>
           ))}
         </section>
@@ -955,21 +956,21 @@ function MovieModal({ movie, close, inList, toggle }) {
               onClick={() => rate('down')}
               title="Not for me"
             >
-              👎
+              <ControlIcon name="dislike" />
             </button>
             <button
               className={rating === 'up' ? 'selected-rating' : ''}
               onClick={() => rate('up')}
               title="Like"
             >
-              👍
+              <ControlIcon name="like" />
             </button>
             <button
               className={rating === 'love' ? 'selected-rating' : ''}
               onClick={() => rate('love')}
               title="Love this"
             >
-              💖
+              <ControlIcon name="heart" />
             </button>
           </div>
           {movie.trailerId && (
@@ -1014,7 +1015,7 @@ function MovieModal({ movie, close, inList, toggle }) {
                       Season {season} · {episode.runtime || 45}m
                     </small>
                   </div>
-                  <b>▶</b>
+                  <b><ControlIcon name="play" /></b>
                 </button>
               ))}
             </section>
@@ -1028,7 +1029,7 @@ function MovieModal({ movie, close, inList, toggle }) {
               target="_blank"
               rel="noreferrer"
             >
-              ▶ Watch trailer
+              <ControlIcon name="play" /> Watch trailer
             </a>
           )}
           <button className="secondary" onClick={() => toggle(listId)}>
