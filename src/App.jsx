@@ -213,6 +213,8 @@ export default function App() {
 function StreamingApp() {
   const navigate = useNavigate()
   const location = useLocation()
+  const previousPath = useRef(location.pathname)
+  const [routeLoading, setRouteLoading] = useState(false)
   const [user, setUser] = useState(null)
   const [guest, setGuest] = useState(false)
   const [register, setRegister] = useState(false)
@@ -226,12 +228,22 @@ function StreamingApp() {
   const [trailerIndex, setTrailerIndex] = useState(0)
   const [muted, setMuted] = useState(false)
   const heroPlayer = useRef(null)
+  const heroTouch = useRef(null)
+  const suppressHeroClick = useRef(false)
   const [search, setSearch] = useState('')
   const [profileOpen, setProfileOpen] = useState(false)
   const [customMovies, setCustomMovies] = useState([])
   const [myList, setMyList] = useState(() =>
     JSON.parse(localStorage.getItem('netflix-list') || '[]')
   )
+
+  useEffect(() => {
+    if (previousPath.current === location.pathname) return
+    previousPath.current = location.pathname
+    setRouteLoading(true)
+    const timer = window.setTimeout(() => setRouteLoading(false), 420)
+    return () => window.clearTimeout(timer)
+  }, [location.pathname])
 
   useEffect(() => onAuthStateChanged(auth, setUser), [])
   useEffect(() => localStorage.setItem('netflix-list', JSON.stringify(myList)), [myList])
@@ -415,6 +427,24 @@ function StreamingApp() {
   const nextTrailer = () => setTrailerIndex((index) => (index + 1) % trailers.length)
   const previousTrailer = () =>
     setTrailerIndex((index) => (index - 1 + trailers.length) % trailers.length)
+  const startHeroSwipe = (event) => {
+    const touch = event.touches[0]
+    heroTouch.current = { x: touch.clientX, y: touch.clientY }
+  }
+  const finishHeroSwipe = (event) => {
+    if (!heroTouch.current) return
+    const touch = event.changedTouches[0]
+    const deltaX = touch.clientX - heroTouch.current.x
+    const deltaY = touch.clientY - heroTouch.current.y
+    heroTouch.current = null
+    if (Math.abs(deltaX) < 48 || Math.abs(deltaX) <= Math.abs(deltaY) * 1.2) return
+    suppressHeroClick.current = true
+    window.setTimeout(() => {
+      suppressHeroClick.current = false
+    }, 450)
+    if (deltaX < 0) nextTrailer()
+    else previousTrailer()
+  }
 
   useEffect(() => {
     const carouselTimer = window.setTimeout(
@@ -446,6 +476,10 @@ function StreamingApp() {
     hitbox.className = 'hero-route-hitbox'
     hitbox.setAttribute('aria-label', `Open ${feature.title}`)
     function openFeaturedTrailer() {
+      if (suppressHeroClick.current) {
+        suppressHeroClick.current = false
+        return
+      }
       setSelected({ ...feature, isTrailer: true })
     }
     hitbox.addEventListener('click', openFeaturedTrailer)
@@ -498,6 +532,8 @@ function StreamingApp() {
       </main>
     )
 
+  if (routeLoading) return <StreamingRouteSkeleton />
+
   if (location.pathname === '/admin') return <AdminPanel user={user} close={() => navigate('/')} />
 
   const routeId = location.pathname.split('/')[2]
@@ -535,13 +571,21 @@ function StreamingApp() {
     <main className="app-shell">
       <header className="nav">
         <strong>NETFLIX</strong>
-        <nav id="netflix-navigation" onClick={(event) => {
-          if (event.target.closest('a')) setProfileOpen(false)
-        }}>
+        <nav
+          id="netflix-navigation"
+          onClick={(event) => {
+            if (event.target.closest('a')) setProfileOpen(false)
+          }}
+        >
           <a href="#home">Home</a>
           <a href="#new">New & Popular</a>
           <a href="#list">My List</a>
-          <button className="mobile-account-action" onClick={() => (user ? signOut(auth) : setGuest(false))}>Sign out</button>
+          <button
+            className="mobile-account-action"
+            onClick={() => (user ? signOut(auth) : setGuest(false))}
+          >
+            Sign out
+          </button>
         </nav>
         <form className="search" onSubmit={(event) => event.preventDefault()}>
           <span>⌕</span>
@@ -562,7 +606,9 @@ function StreamingApp() {
             className="profile-button"
             onClick={() => setProfileOpen(!profileOpen)}
             aria-expanded={profileOpen}
-            aria-label={profileOpen ? 'Close navigation and account menu' : 'Open navigation and account menu'}
+            aria-label={
+              profileOpen ? 'Close navigation and account menu' : 'Open navigation and account menu'
+            }
             aria-controls="netflix-navigation"
           >
             <span>N</span>⌄
@@ -595,7 +641,15 @@ function StreamingApp() {
           empty="No matching titles in the current collection."
         />
       )}
-      <section className="video-hero" id="home">
+      <section
+        className="video-hero"
+        id="home"
+        onTouchStart={startHeroSwipe}
+        onTouchEnd={finishHeroSwipe}
+        onTouchCancel={() => {
+          heroTouch.current = null
+        }}
+      >
         <TrailerPlayer
           ref={heroPlayer}
           videoId={feature.videoId}
@@ -666,6 +720,39 @@ function StreamingApp() {
           toggle={toggle}
         />
       )}
+    </main>
+  )
+}
+
+function StreamingRouteSkeleton() {
+  return (
+    <main
+      className="route-skeleton route-skeleton--netflix"
+      aria-busy="true"
+      aria-label="Loading page"
+    >
+      <header className="route-skeleton__nav">
+        <span className="route-skeleton__brand" />
+        <span className="route-skeleton__nav-item" />
+        <span className="route-skeleton__nav-item" />
+        <span className="route-skeleton__search" />
+      </header>
+      <section className="route-skeleton__hero">
+        <span className="route-skeleton__eyebrow" />
+        <span className="route-skeleton__title" />
+        <span className="route-skeleton__title route-skeleton__title--short" />
+        <span className="route-skeleton__copy" />
+        <span className="route-skeleton__copy route-skeleton__copy--short" />
+        <span className="route-skeleton__button" />
+      </section>
+      <section className="route-skeleton__row">
+        <span className="route-skeleton__row-title" />
+        <div className="route-skeleton__cards">
+          {Array.from({ length: 6 }, (_, index) => (
+            <span className="route-skeleton__card" key={index} />
+          ))}
+        </div>
+      </section>
     </main>
   )
 }
@@ -802,7 +889,8 @@ function TitleLandingPage({ movie, back, inList, toggle }) {
           {title.trailerId && (
             <>
               <button className="primary" onClick={() => titlePlayer.current?.toggleSound()}>
-                <ControlIcon name={titleMuted ? 'muted' : 'sound'} /> {titleMuted ? 'Turn sound on' : 'Mute trailer'}
+                <ControlIcon name={titleMuted ? 'muted' : 'sound'} />{' '}
+                {titleMuted ? 'Turn sound on' : 'Mute trailer'}
               </button>
               <a
                 className="secondary title-watch-link"
@@ -858,7 +946,9 @@ function TitleLandingPage({ movie, back, inList, toggle }) {
                 <small>{episode.runtime || 45}m</small>
                 <p>{episode.overview || 'Continue the story in this episode.'}</p>
               </div>
-              <b><ControlIcon name="play" /></b>
+              <b>
+                <ControlIcon name="play" />
+              </b>
             </article>
           ))}
         </section>
@@ -1001,7 +1091,9 @@ function MovieModal({ movie, close, inList, toggle }) {
                       Season {season} · {episode.runtime || 45}m
                     </small>
                   </div>
-                  <b><ControlIcon name="play" /></b>
+                  <b>
+                    <ControlIcon name="play" />
+                  </b>
                 </button>
               ))}
             </section>
