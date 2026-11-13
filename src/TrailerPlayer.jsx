@@ -71,14 +71,11 @@ export default function TrailerPlayer({
     frame.className = className || ''
     frame.classList.add('youtube-trailer-pending')
     frame.title = title
+    frame.loading = 'eager'
     frame.allow = 'autoplay; encrypted-media; picture-in-picture'
     frame.allowFullscreen = true
-    frame.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=0&controls=${controls ? 1 : 0}&rel=0&cc_load_policy=0&iv_load_policy=3&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`
+    frame.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&controls=${controls ? 1 : 0}&rel=0&cc_load_policy=0&iv_load_policy=3&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`
     container.appendChild(frame)
-    revealTimer = window.setTimeout(() => {
-      frame.classList.remove('youtube-trailer-pending')
-      frame.classList.add('youtube-trailer-ready')
-    }, 500)
     loadYouTube().then((YT) => {
       if (disposed) return
       instance = new YT.Player(frame, {
@@ -87,14 +84,12 @@ export default function TrailerPlayer({
             if (disposed) return
             player.current = target
             disableCaptions(target)
-            target.unMute()
-            target.setVolume(100)
+            target.mute()
             target.playVideo()
-            reportMuted(false)
+            reportMuted(true)
           },
           onAutoplayBlocked({ target }) {
-            if (disposed || target.isMuted()) return
-            // Keep video moving if the browser refuses audible autoplay.
+            if (disposed) return
             target.mute()
             target.playVideo()
             reportMuted(true)
@@ -103,6 +98,12 @@ export default function TrailerPlayer({
             if (!disposed && data === 1) {
               disableCaptions(target)
               reportMuted(target.isMuted())
+              if (!revealTimer && !frame.classList.contains('youtube-trailer-ready')) {
+                revealTimer = window.setTimeout(() => {
+                  frame.classList.remove('youtube-trailer-pending')
+                  frame.classList.add('youtube-trailer-ready')
+                }, 150)
+              }
             }
           },
         },

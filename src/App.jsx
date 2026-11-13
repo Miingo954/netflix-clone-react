@@ -226,7 +226,7 @@ function StreamingApp() {
   const [apiMovies, setApiMovies] = useState([])
   const [apiStatus, setApiStatus] = useState('')
   const [trailerIndex, setTrailerIndex] = useState(0)
-  const [muted, setMuted] = useState(false)
+  const [muted, setMuted] = useState(true)
   const heroPlayer = useRef(null)
   const heroTouch = useRef(null)
   const suppressHeroClick = useRef(false)
