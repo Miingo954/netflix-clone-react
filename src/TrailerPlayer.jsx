@@ -65,9 +65,11 @@ export default function TrailerPlayer({
   useEffect(() => {
     let disposed = false
     let instance
+    let revealTimer
     const container = host.current
     const frame = document.createElement('iframe')
     frame.className = className || ''
+    frame.classList.add('youtube-trailer-pending')
     frame.title = title
     frame.allow = 'autoplay; encrypted-media; picture-in-picture'
     frame.allowFullscreen = true
@@ -97,6 +99,12 @@ export default function TrailerPlayer({
             if (!disposed && data === 1) {
               disableCaptions(target)
               reportMuted(target.isMuted())
+              if (!revealTimer && !frame.classList.contains('youtube-trailer-ready')) {
+                revealTimer = window.setTimeout(() => {
+                  frame.classList.remove('youtube-trailer-pending')
+                  frame.classList.add('youtube-trailer-ready')
+                }, 4500)
+              }
             }
           },
         },
@@ -104,6 +112,7 @@ export default function TrailerPlayer({
     })
     return () => {
       disposed = true
+      window.clearTimeout(revealTimer)
       player.current = null
       instance?.destroy()
       container.replaceChildren()
