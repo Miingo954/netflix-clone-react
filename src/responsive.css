@@ -51,7 +51,7 @@
 }
 
 .video-hero .hero-copy {
-  animation: carousel-copy 78s cubic-bezier(0.2, 0.85, 0.25, 1) infinite;
+  animation: none;
 }
 
 @keyframes carousel-copy {
