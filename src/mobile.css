@@ -72,6 +72,10 @@
     background-repeat: no-repeat;
     touch-action: pan-y;
   }
+  .video-hero::before {
+    height: 56.25vw;
+    bottom: auto;
+  }
   .video-hero .hero-video {
     inset: 0 auto auto 0;
     width: 100%;

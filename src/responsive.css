@@ -15,12 +15,33 @@
 }
 
 .video-hero .hero-video.youtube-trailer-pending {
-  opacity: 0 !important;
+  opacity: 1 !important;
 }
 
 .video-hero .hero-video.youtube-trailer-ready {
   opacity: 1 !important;
   transition: opacity 0.4s ease;
+}
+
+.video-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(115deg, #080808 0%, #151515 58%, #24090b 100%);
+  opacity: 0;
+  visibility: hidden;
+}
+
+.video-hero:has(.youtube-trailer-pending)::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+.video-hero .hero-copy,
+.video-hero .trailer-controls {
+  z-index: 3;
 }
 
 .hero-route-hitbox {
