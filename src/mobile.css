@@ -67,6 +67,9 @@
     min-height: 0;
     height: auto;
     padding: calc(56.25vw + 18px) 20px 72px;
+    background-position: top center;
+    background-size: 100% 56.25vw;
+    background-repeat: no-repeat;
     touch-action: pan-y;
   }
   .video-hero .hero-video {
