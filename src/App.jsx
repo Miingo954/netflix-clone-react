@@ -647,7 +647,7 @@ function StreamingApp() {
           onMutedChange={setMuted}
         />
         <div className="hero-shade" />
-        <div className="hero-copy">
+        <div className="hero-copy" key={feature.videoId}>
           <p className="eyebrow">FEATURED TRAILER</p>
           <h1>{feature.title}</h1>
           <p className="feature-meta">{feature.detail}</p>
