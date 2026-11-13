@@ -75,6 +75,10 @@ export default function TrailerPlayer({
     frame.allowFullscreen = true
     frame.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=0&controls=${controls ? 1 : 0}&rel=0&cc_load_policy=0&iv_load_policy=3&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`
     container.appendChild(frame)
+    revealTimer = window.setTimeout(() => {
+      frame.classList.remove('youtube-trailer-pending')
+      frame.classList.add('youtube-trailer-ready')
+    }, 500)
     loadYouTube().then((YT) => {
       if (disposed) return
       instance = new YT.Player(frame, {
@@ -99,12 +103,6 @@ export default function TrailerPlayer({
             if (!disposed && data === 1) {
               disableCaptions(target)
               reportMuted(target.isMuted())
-              if (!revealTimer && !frame.classList.contains('youtube-trailer-ready')) {
-                revealTimer = window.setTimeout(() => {
-                  frame.classList.remove('youtube-trailer-pending')
-                  frame.classList.add('youtube-trailer-ready')
-                }, 500)
-              }
             }
           },
         },

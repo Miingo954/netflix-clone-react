@@ -84,7 +84,9 @@
     transform: none !important;
   }
   .video-hero .hero-shade {
-    background: linear-gradient(180deg, transparent 0, transparent 35vw, #080808 57vw);
+    background:
+      linear-gradient(180deg, #080808 0, #080808 30px, transparent 48px),
+      linear-gradient(180deg, transparent 0, transparent 35vw, #080808 57vw);
   }
   .video-hero .hero-copy {
     max-width: none;
