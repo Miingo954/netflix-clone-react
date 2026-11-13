@@ -103,7 +103,7 @@ export default function TrailerPlayer({
                 revealTimer = window.setTimeout(() => {
                   frame.classList.remove('youtube-trailer-pending')
                   frame.classList.add('youtube-trailer-ready')
-                }, 4500)
+                }, 500)
               }
             }
           },
