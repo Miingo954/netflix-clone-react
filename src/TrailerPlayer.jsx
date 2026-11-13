@@ -1,6 +1,16 @@
 import { useEffect, useEffectEvent, useImperativeHandle, useRef } from 'react'
 
 let apiPromise
+function disableCaptions(player) {
+  try {
+    player.unloadModule?.('captions')
+    player.unloadModule?.('cc')
+    player.setOption?.('captions', 'track', {})
+  } catch {
+    // Some trailer embeds do not expose the captions module.
+  }
+}
+
 function loadYouTube() {
   if (window.YT?.Player) return Promise.resolve(window.YT)
   if (!apiPromise) {
@@ -20,26 +30,37 @@ function loadYouTube() {
 }
 
 // Own the iframe inside a host so API cleanup is safe with React Strict Mode.
-export default function TrailerPlayer({ ref, videoId, title, className, onMutedChange, controls = false }) {
+export default function TrailerPlayer({
+  ref,
+  videoId,
+  title,
+  className,
+  onMutedChange,
+  controls = false,
+}) {
   const host = useRef(null)
   const player = useRef(null)
   const reportMuted = useEffectEvent((muted) => onMutedChange?.(muted))
 
-  useImperativeHandle(ref, () => ({
-    toggleSound() {
-      const current = player.current
-      if (!current?.getPlayerState) return
-      const wasMuted = current.isMuted()
-      if (wasMuted) {
-        current.unMute()
-        current.setVolume(100)
-        current.playVideo()
-      } else {
-        current.mute()
-      }
-      onMutedChange?.(!wasMuted)
-    },
-  }), [onMutedChange])
+  useImperativeHandle(
+    ref,
+    () => ({
+      toggleSound() {
+        const current = player.current
+        if (!current?.getPlayerState) return
+        const wasMuted = current.isMuted()
+        if (wasMuted) {
+          current.unMute()
+          current.setVolume(100)
+          current.playVideo()
+        } else {
+          current.mute()
+        }
+        onMutedChange?.(!wasMuted)
+      },
+    }),
+    [onMutedChange]
+  )
 
   useEffect(() => {
     let disposed = false
@@ -59,6 +80,7 @@ export default function TrailerPlayer({ ref, videoId, title, className, onMutedC
           onReady({ target }) {
             if (disposed) return
             player.current = target
+            disableCaptions(target)
             target.unMute()
             target.setVolume(100)
             target.playVideo()
@@ -72,7 +94,10 @@ export default function TrailerPlayer({ ref, videoId, title, className, onMutedC
             reportMuted(true)
           },
           onStateChange({ target, data }) {
-            if (!disposed && data === 1) reportMuted(target.isMuted())
+            if (!disposed && data === 1) {
+              disableCaptions(target)
+              reportMuted(target.isMuted())
+            }
           },
         },
       })
