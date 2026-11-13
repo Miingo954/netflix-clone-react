@@ -230,7 +230,6 @@ function StreamingApp() {
   const heroPlayer = useRef(null)
   const heroTouch = useRef(null)
   const suppressHeroClick = useRef(false)
-  const hasRenderedHero = useRef(false)
   const [search, setSearch] = useState('')
   const [profileOpen, setProfileOpen] = useState(false)
   const [customMovies, setCustomMovies] = useState([])
@@ -453,24 +452,6 @@ function StreamingApp() {
       TRAILER_DISPLAY_MS
     )
     return () => window.clearTimeout(carouselTimer)
-  }, [trailerIndex])
-
-  useEffect(() => {
-    if (!hasRenderedHero.current) {
-      hasRenderedHero.current = true
-      return
-    }
-    const hero = document.querySelector('.video-hero')
-    if (!hero) return
-    let transitionTimer
-    const startTimer = window.setTimeout(() => {
-      hero.classList.add('is-transitioning')
-      transitionTimer = window.setTimeout(() => hero.classList.remove('is-transitioning'), 900)
-    }, 60)
-    return () => {
-      window.clearTimeout(startTimer)
-      window.clearTimeout(transitionTimer)
-    }
   }, [trailerIndex])
 
   useEffect(() => {
