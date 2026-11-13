@@ -645,7 +645,7 @@ function StreamingApp() {
         className="video-hero"
         id="home"
         style={{
-          backgroundImage: `url(https://i.ytimg.com/vi/${feature.videoId}/maxresdefault.jpg)`,
+          backgroundImage: 'linear-gradient(115deg, #080808 0%, #151515 58%, #24090b 100%)',
         }}
         onTouchStart={startHeroSwipe}
         onTouchEnd={finishHeroSwipe}
