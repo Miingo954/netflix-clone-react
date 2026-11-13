@@ -91,7 +91,7 @@
   }
   .video-hero .hero-copy {
     max-width: none;
-    animation: none;
+    animation: title-arrival 0.7s cubic-bezier(0.2, 0.85, 0.25, 1) both;
   }
   .hero-copy h1 {
     font-size: clamp(1.85rem, 8vw, 2.6rem);
