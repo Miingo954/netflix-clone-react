@@ -115,6 +115,8 @@
   display: flex;
   align-items: center;
   padding: 6vw 4vw;
+  background-position: center;
+  background-size: cover;
 }
 .hero-video {
   position: absolute;
@@ -739,21 +741,70 @@ footer {
   animation: route-skeleton-shimmer 1.15s linear infinite;
 }
 
-.route-skeleton__brand { width: 92px; height: 20px; background: #b20710 !important; }
-.route-skeleton__nav-item { width: 54px; height: 13px; }
-.route-skeleton__search { width: min(220px, 22vw); height: 30px; margin-left: auto; }
-.route-skeleton__hero { min-height: 54vh; padding: clamp(6rem, 12vw, 12rem) 8vw 3rem; }
-.route-skeleton__eyebrow { width: 110px; height: 11px; margin-bottom: 1.25rem; }
-.route-skeleton__title { width: min(420px, 52vw); height: clamp(34px, 4vw, 64px); margin-bottom: 0.7rem; }
-.route-skeleton__title--short { width: min(300px, 42vw); }
-.route-skeleton__copy { width: min(470px, 56vw); height: 15px; margin-top: 1.5rem; }
-.route-skeleton__copy--short { width: min(350px, 42vw); margin-top: 0.55rem; }
-.route-skeleton__button { width: 110px; height: 42px; margin-top: 2rem; }
-.route-skeleton__row { padding: 0 4vw 3rem; }
-.route-skeleton__row-title { width: 150px; height: 20px; margin-bottom: 1rem; }
-.route-skeleton__cards { display: flex; gap: 0.85rem; }
-.route-skeleton__card { flex: 0 0 clamp(126px, 15vw, 210px); aspect-ratio: 2 / 3; }
+.route-skeleton__brand {
+  width: 92px;
+  height: 20px;
+  background: #b20710 !important;
+}
+.route-skeleton__nav-item {
+  width: 54px;
+  height: 13px;
+}
+.route-skeleton__search {
+  width: min(220px, 22vw);
+  height: 30px;
+  margin-left: auto;
+}
+.route-skeleton__hero {
+  min-height: 54vh;
+  padding: clamp(6rem, 12vw, 12rem) 8vw 3rem;
+}
+.route-skeleton__eyebrow {
+  width: 110px;
+  height: 11px;
+  margin-bottom: 1.25rem;
+}
+.route-skeleton__title {
+  width: min(420px, 52vw);
+  height: clamp(34px, 4vw, 64px);
+  margin-bottom: 0.7rem;
+}
+.route-skeleton__title--short {
+  width: min(300px, 42vw);
+}
+.route-skeleton__copy {
+  width: min(470px, 56vw);
+  height: 15px;
+  margin-top: 1.5rem;
+}
+.route-skeleton__copy--short {
+  width: min(350px, 42vw);
+  margin-top: 0.55rem;
+}
+.route-skeleton__button {
+  width: 110px;
+  height: 42px;
+  margin-top: 2rem;
+}
+.route-skeleton__row {
+  padding: 0 4vw 3rem;
+}
+.route-skeleton__row-title {
+  width: 150px;
+  height: 20px;
+  margin-bottom: 1rem;
+}
+.route-skeleton__cards {
+  display: flex;
+  gap: 0.85rem;
+}
+.route-skeleton__card {
+  flex: 0 0 clamp(126px, 15vw, 210px);
+  aspect-ratio: 2 / 3;
+}
 
 @keyframes route-skeleton-shimmer {
-  to { background-position-x: -220%; }
+  to {
+    background-position-x: -220%;
+  }
 }

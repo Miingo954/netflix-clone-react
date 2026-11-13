@@ -142,7 +142,7 @@ const trailers = [
     detail: '2023 · Action · Animation',
     description:
       'Miles Morales is launched across the Multiverse, where he must decide what it truly means to be a hero.',
-    videoId: 'cqGjhVJWtEg',
+    videoId: 'shW9i6k8cB0',
   },
   {
     title: 'Outer Banks',
@@ -644,6 +644,9 @@ function StreamingApp() {
       <section
         className="video-hero"
         id="home"
+        style={{
+          backgroundImage: `url(https://i.ytimg.com/vi/${feature.videoId}/maxresdefault.jpg)`,
+        }}
         onTouchStart={startHeroSwipe}
         onTouchEnd={finishHeroSwipe}
         onTouchCancel={() => {
