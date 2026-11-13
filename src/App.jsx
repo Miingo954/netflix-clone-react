@@ -230,6 +230,7 @@ function StreamingApp() {
   const heroPlayer = useRef(null)
   const heroTouch = useRef(null)
   const suppressHeroClick = useRef(false)
+  const hasRenderedHero = useRef(false)
   const [search, setSearch] = useState('')
   const [profileOpen, setProfileOpen] = useState(false)
   const [customMovies, setCustomMovies] = useState([])
@@ -455,6 +456,10 @@ function StreamingApp() {
   }, [trailerIndex])
 
   useEffect(() => {
+    if (!hasRenderedHero.current) {
+      hasRenderedHero.current = true
+      return
+    }
     const hero = document.querySelector('.video-hero')
     if (!hero) return
     let transitionTimer
