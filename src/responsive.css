@@ -24,13 +24,13 @@
 }
 
 .video-hero .hero-video {
-  animation: trailer-slide-in 3.2s cubic-bezier(0.2, 0.85, 0.25, 1) both;
+  animation: trailer-slide-in 5.2s cubic-bezier(0.2, 0.85, 0.25, 1) both;
   clip-path: inset(0 0 0 0);
 }
 
 @keyframes trailer-slide-in {
   0%,
-  68% {
+  82% {
     opacity: 0;
     clip-path: inset(0 0 0 100%);
     transform: scale(1.18) translateX(9%);
@@ -110,7 +110,7 @@
 
   @keyframes trailer-slide-in-mobile {
     0%,
-    68% {
+    82% {
       opacity: 0;
       transform: scale(2.05) translateX(5%);
     }
