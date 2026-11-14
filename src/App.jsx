@@ -228,6 +228,7 @@ function StreamingApp() {
   const [loading, setLoading] = useState(false)
   const [selected, setSelected] = useState(null)
   const [apiMovies, setApiMovies] = useState([])
+  const [upcomingTitles, setUpcomingTitles] = useState([])
   const [apiStatus, setApiStatus] = useState('')
   const [trailerIndex, setTrailerIndex] = useState(0)
   const [muted, setMuted] = useState(true)
@@ -282,26 +283,25 @@ function StreamingApp() {
     async function loadMovies() {
       setApiStatus('Loading live movies and TV shows…')
       try {
-        const [popularMovies, popularSeries, topRatedSeries, trending, outerBanks, familyGuy] =
+        const [popularMovies, popularSeries, topRatedSeries, trending, upcoming, upcomingShows, outerBanks, familyGuy] =
           await Promise.all([
-            tmdbRequest('/movie/popular'),
-            tmdbRequest('/tv/popular'),
-            tmdbRequest('/tv/top_rated'),
+            Promise.all([1, 2, 3].map((page) => tmdbRequest(`/movie/popular?page=${page}`))),
+            Promise.all([1, 2, 3].map((page) => tmdbRequest(`/tv/popular?page=${page}`))),
+            Promise.all([1, 2].map((page) => tmdbRequest(`/tv/top_rated?page=${page}`))),
             tmdbRequest('/trending/all/week'),
+            Promise.all([1, 2].map((page) => tmdbRequest(`/movie/upcoming?page=${page}`))),
+            Promise.all([1, 2].map((page) => tmdbRequest(`/tv/on_the_air?page=${page}`))),
             tmdbRequest('/tv/100757'),
             tmdbRequest('/tv/1434'),
           ])
-        const movies = popularMovies.results
+        const movies = popularMovies.flatMap((page) => page.results)
           .filter(isStreamworthy)
-          .slice(0, 10)
           .map((item) => toTmdbMovie(item, 'movie'))
-        const seriesResults = popularSeries.results
+        const seriesResults = popularSeries.flatMap((page) => page.results)
           .filter(isStreamworthy)
-          .slice(0, 10)
           .map((item) => toTmdbMovie(item, 'series'))
-        const topSeries = topRatedSeries.results
+        const topSeries = topRatedSeries.flatMap((page) => page.results)
           .filter(isStreamworthy)
-          .slice(0, 10)
           .map((item) => toTmdbMovie(item, 'series'))
         const trendingResults = trending.results
           .filter(
@@ -313,6 +313,16 @@ function StreamingApp() {
         const requestedSeries = [outerBanks, familyGuy]
           .filter(isStreamworthy)
           .map((item) => toTmdbMovie(item, 'series'))
+        const upcomingResults = [
+          ...upcoming.flatMap((page) => page.results).map((item) => toTmdbMovie(item, 'movie')),
+          ...upcomingShows
+            .flatMap((page) => page.results)
+            .map((item) => toTmdbMovie(item, 'series')),
+        ]
+          .filter(isStreamworthy)
+          .filter(
+            (title, index, titles) => titles.findIndex((item) => item.id === title.id) === index
+          )
         const uniqueTitles = [
           ...requestedSeries,
           ...trendingResults,
@@ -323,7 +333,8 @@ function StreamingApp() {
           (title, index, titles) => titles.findIndex((item) => item.id === title.id) === index
         )
         setApiMovies(uniqueTitles)
-        setApiStatus('Live movies and TV series powered by TMDB')
+        setUpcomingTitles(upcomingResults)
+        setApiStatus(`${uniqueTitles.length} live movies and TV series powered by TMDB`)
       } catch {
         setApiStatus('Live titles are unavailable right now — showing the demo collection.')
       }
@@ -571,6 +582,12 @@ function StreamingApp() {
             ? 'Movies'
             : location.pathname === '/new-hot'
               ? 'New & Hot'
+              : location.pathname === '/notifications'
+                ? 'Notifications'
+                : location.pathname === '/search'
+                  ? 'Search'
+                  : location.pathname === '/my-netflix'
+                    ? 'My Netflix'
               : 'Home'
       const mobileFeatures =
         mobileSection === 'Shows'
@@ -579,22 +596,49 @@ function StreamingApp() {
             ? movieOnly.slice(0, 4)
             : mobileSection === 'New & Hot'
               ? dramaAndAction.slice(0, 4)
+              : mobileSection === 'Notifications'
+                ? upcomingTitles.slice(0, 4)
+                : mobileSection === 'My Netflix'
+                  ? savedMovies.slice(0, 4)
+                  : mobileSection === 'Search' && searchResults.length
+                    ? searchResults.slice(0, 4)
               : [movieOnly[0], ...bingeSeries.slice(0, 3)].filter(Boolean)
+      const mobileRows =
+        mobileSection === 'Notifications'
+          ? [['Coming Soon', upcomingTitles]]
+          : mobileSection === 'New & Hot'
+            ? [['Trending Now', dramaAndAction], ['Coming Soon', upcomingTitles]]
+          : mobileSection === 'My Netflix'
+            ? [['My List', savedMovies]]
+            : mobileSection === 'Search'
+              ? [[search ? `Results for “${search}”` : 'Browse the catalog', search ? searchResults : allMovies]]
+              : mobileSection === 'Shows'
+                ? [['Popular Shows', series], ['Binge-Worthy Series', bingeSeries]]
+                : mobileSection === 'Movies'
+                  ? [['Popular Movies', movieOnly], ['Action, Drama & Adventure', dramaAndAction]]
+                  : [
+                      ['Binges That Blow Up the Group Chat', bingeSeries],
+                      ['Popular Movies', movieOnly],
+                      ['Action, Drama & Adventure', dramaAndAction],
+                      ['Comedy & Animation', comedyAndAnimation],
+                    ]
       return (
       <MobileNetflixHome
         key={location.pathname}
         section={mobileSection}
-        features={mobileFeatures.length ? mobileFeatures : allMovies.slice(0, 4)}
-        rows={[
-          ['Binges That Blow Up the Group Chat', bingeSeries.slice(0, 10)],
-          ['Popular Movies', movieOnly.slice(0, 10)],
-          ['Action, Drama & Adventure', dramaAndAction.slice(0, 10)],
-          ['Comedy & Animation', comedyAndAnimation.slice(0, 10)],
-        ]}
+        features={
+          mobileFeatures.length || ['My Netflix', 'Search', 'Notifications'].includes(mobileSection)
+            ? mobileFeatures
+            : allMovies.slice(0, 4)
+        }
+        rows={mobileRows}
         openMovie={openMovie}
         inList={(id) => myList.includes(id)}
         toggle={toggle}
         navigate={navigate}
+        search={search}
+        setSearch={setSearch}
+        signOutUser={() => (user ? signOut(auth) : setGuest(false))}
       />
     )
     }
@@ -820,9 +864,10 @@ function StreamingRouteSkeleton() {
   )
 }
 
-function MobileNetflixHome({ section, features, rows, openMovie, inList, toggle, navigate }) {
+function MobileNetflixHome({ section, features, rows, openMovie, inList, toggle, navigate, search, setSearch, signOutUser }) {
   const featureTrack = useRef(null)
   const featureIndex = useRef(0)
+  const [menuOpen, setMenuOpen] = useState(false)
   useEffect(() => {
     const timer = window.setInterval(() => {
       const track = featureTrack.current
@@ -835,7 +880,6 @@ function MobileNetflixHome({ section, features, rows, openMovie, inList, toggle,
     }, 6500)
     return () => window.clearInterval(timer)
   }, [features.length])
-  if (!features.length) return <StreamingRouteSkeleton />
   const routes = [
     ['Shows', '/shows'],
     ['Movies', '/movies'],
@@ -844,19 +888,33 @@ function MobileNetflixHome({ section, features, rows, openMovie, inList, toggle,
   return (
     <main className="mobile-netflix-home mobile-netflix-page-slide">
       <header className="mobile-netflix-header">
-        <div>
-          {section !== 'Home' && <button className="mobile-netflix-back" onClick={() => navigate('/')} aria-label="Back home">‹</button>}
-          {section === 'Home' && <b>N</b>}
-          <h1>{section}</h1>
+        <div className="mobile-netflix-brandline">
+          <strong onClick={() => navigate('/')}>NETFLIX</strong>
+          {section !== 'Home' && <h1>{section}</h1>}
         </div>
-        <div className="mobile-netflix-header-actions" aria-hidden="true"><span>⇩</span><span>♧</span></div>
+        <button className="mobile-netflix-menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-label="Open account menu">{menuOpen ? '×' : '☰'}</button>
+        {menuOpen && (
+          <div className="mobile-netflix-menu">
+            <button onClick={() => { navigate('/notifications'); setMenuOpen(false) }}>Notifications</button>
+            <button onClick={signOutUser}>Sign out</button>
+          </div>
+        )}
       </header>
       <nav className="mobile-netflix-filters" aria-label="Browse Netflix">
         {routes.map(([label, path]) => (
           <button className={section === label ? 'active' : ''} key={path} onClick={() => navigate(path)}>{label}</button>
         ))}
       </nav>
-      <section ref={featureTrack} className="mobile-netflix-feature-track" aria-label="Featured titles">
+      {section === 'Search' && (
+        <form className="mobile-netflix-search" onSubmit={(event) => event.preventDefault()}>
+          <span>⌕</span>
+          <input autoFocus value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search movies and shows" aria-label="Search movies and shows" />
+          {search && <button type="button" onClick={() => setSearch('')}>×</button>}
+        </form>
+      )}
+      {section === 'Notifications' && <p className="mobile-netflix-route-note">Upcoming movies and shows</p>}
+      {section === 'My Netflix' && !features.length && <p className="mobile-netflix-empty">Titles you add to My List will appear here.</p>}
+      {!!features.length && <section ref={featureTrack} className="mobile-netflix-feature-track" aria-label="Featured titles">
         {features.map((feature) => (
           <article className="mobile-netflix-feature" key={feature.id}>
             <button className="mobile-netflix-feature-image" onClick={() => openMovie(feature)}>
@@ -875,15 +933,14 @@ function MobileNetflixHome({ section, features, rows, openMovie, inList, toggle,
             </div>
           </article>
         ))}
-      </section>
+      </section>}
       {rows.map(([title, movies]) => (
         <MobileNetflixRow key={title} title={title} movies={movies} openMovie={openMovie} />
       ))}
       <nav className="mobile-netflix-bottom" aria-label="Netflix app navigation">
-        <button className="active"><span>⌂</span>Home</button>
-        <button><span>▣</span>Clips</button>
-        <button><span>⌕</span>Search</button>
-        <button><span className="mobile-netflix-avatar">N</span>My Netflix</button>
+        <button className={section === 'Home' ? 'active' : ''} onClick={() => navigate('/')}><span>⌂</span>Home</button>
+        <button className={section === 'Search' ? 'active' : ''} onClick={() => navigate('/search')}><span>⌕</span>Search</button>
+        <button className={section === 'My Netflix' ? 'active' : ''} onClick={() => navigate('/my-netflix')}><span className="mobile-netflix-avatar">N</span>My Netflix</button>
       </nav>
     </main>
   )
@@ -891,13 +948,15 @@ function MobileNetflixHome({ section, features, rows, openMovie, inList, toggle,
 
 function MobileNetflixRow({ title, movies, openMovie }) {
   if (!movies.length) return null
+  const upcoming = title === 'Coming Soon'
   return (
-    <section className="mobile-netflix-row">
+    <section className={`mobile-netflix-row${upcoming ? ' mobile-netflix-upcoming' : ''}`}>
       <h2>{title}</h2>
       <div>
         {movies.map((movie) => (
           <button key={movie.id} onClick={() => openMovie(movie)}>
             <img src={movie.poster || movie.image} alt={`${movie.title} poster`} />
+            {upcoming && <span><strong>{movie.title}</strong><small>{movie.year} · Coming soon</small></span>}
           </button>
         ))}
       </div>
