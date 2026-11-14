@@ -231,6 +231,7 @@ function StreamingApp() {
   const [apiStatus, setApiStatus] = useState('')
   const [trailerIndex, setTrailerIndex] = useState(0)
   const [muted, setMuted] = useState(true)
+  const [mobileTrailerPlaying, setMobileTrailerPlaying] = useState(false)
   const heroPlayer = useRef(null)
   const heroTouch = useRef(null)
   const suppressHeroClick = useRef(false)
@@ -401,6 +402,7 @@ function StreamingApp() {
     })
   const feature = trailers[trailerIndex]
   const isMobileViewport = window.matchMedia('(max-width: 700px)').matches
+  useEffect(() => setMobileTrailerPlaying(false), [trailerIndex])
   const allMovies = useMemo(
     () =>
       [
@@ -650,7 +652,11 @@ function StreamingApp() {
           className="hero-video"
           title={`${feature.title} video`}
           onMutedChange={setMuted}
+          onPlayingChange={setMobileTrailerPlaying}
         />
+        {isMobileViewport && !mobileTrailerPlaying && (
+          <img className="mobile-hero-poster" src={feature.backdrop} alt="" />
+        )}
         <div className="hero-shade" />
         <div className="hero-copy" key={feature.videoId}>
           <p className="eyebrow">FEATURED TRAILER</p>

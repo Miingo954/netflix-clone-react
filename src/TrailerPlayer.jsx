@@ -36,12 +36,14 @@ export default function TrailerPlayer({
   title,
   className,
   onMutedChange,
+  onPlayingChange,
   controls = false,
 }) {
   const host = useRef(null)
   const player = useRef(null)
   const pendingPlayRequest = useRef(false)
   const reportMuted = useEffectEvent((muted) => onMutedChange?.(muted))
+  const reportPlaying = useEffectEvent((playing) => onPlayingChange?.(playing))
 
   useImperativeHandle(
     ref,
@@ -71,6 +73,7 @@ export default function TrailerPlayer({
     let instance
     let revealTimer
     const isMobile = window.matchMedia('(max-width: 700px)').matches
+    reportPlaying(false)
     const container = host.current
     const frame = document.createElement('iframe')
     frame.className = className || ''
@@ -79,7 +82,7 @@ export default function TrailerPlayer({
     frame.loading = 'eager'
     frame.allow = 'autoplay; encrypted-media; picture-in-picture'
     frame.allowFullscreen = true
-    frame.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&controls=${controls ? 1 : 0}&rel=0&cc_load_policy=0&iv_load_policy=3&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`
+    frame.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=${isMobile ? 0 : 1}&mute=1&controls=${controls ? 1 : 0}&rel=0&cc_load_policy=0&iv_load_policy=3&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`
     container.appendChild(frame)
     loadYouTube().then((YT) => {
       if (disposed) return
@@ -97,7 +100,7 @@ export default function TrailerPlayer({
               reportMuted(false)
             } else {
               target.mute()
-              target.playVideo()
+              if (!isMobile) target.playVideo()
               reportMuted(true)
             }
           },
@@ -109,6 +112,7 @@ export default function TrailerPlayer({
           },
           onStateChange({ target, data }) {
             if (!disposed && data === 1) {
+              reportPlaying(true)
               disableCaptions(target)
               reportMuted(target.isMuted())
               if (!revealTimer && !frame.classList.contains('youtube-trailer-ready')) {
@@ -117,7 +121,7 @@ export default function TrailerPlayer({
                   frame.classList.add('youtube-trailer-ready')
                 }, 150)
               }
-            }
+            } else if (!disposed && data === 0) reportPlaying(false)
           },
         },
       })
