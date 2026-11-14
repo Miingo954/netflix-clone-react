@@ -446,6 +446,15 @@ function StreamingApp() {
   const bingeSeries = [theOA, outerBanks, familyGuy, ...series].filter(
     (movie, index, titles) => movie && titles.findIndex((item) => item?.id === movie.id) === index
   )
+  const featuredShows = [theOA, outerBanks, series[12], series[25]]
+    .filter(Boolean)
+    .filter((show, index, titles) => titles.findIndex((item) => item.id === show.id) === index)
+  const featuredShowIds = new Set(featuredShows.map((show) => show.id))
+  const popularShows = series.filter((show) => !featuredShowIds.has(show.id)).slice(0, 22)
+  const popularShowIds = new Set(popularShows.map((show) => show.id))
+  const bingeShowSuggestions = bingeSeries
+    .filter((show) => !featuredShowIds.has(show.id) && !popularShowIds.has(show.id))
+    .slice(0, 22)
   const dramaAndAction = [...movieOnly, ...series]
     .filter((movie) => !['Family Guy', 'The Simpsons'].includes(movie.title))
     .slice(0, 10)
@@ -613,7 +622,7 @@ function StreamingApp() {
               : 'Home'
       const mobileFeatures =
         mobileSection === 'Shows'
-          ? bingeSeries.slice(0, 4)
+          ? featuredShows
           : mobileSection === 'Movies'
             ? variedMovieFeatures
             : mobileSection === 'New & Popular'
@@ -635,7 +644,7 @@ function StreamingApp() {
             : mobileSection === 'Search'
               ? [[search ? `Results for “${search}”` : 'Browse the catalog', search ? searchResults : allMovies]]
               : mobileSection === 'Shows'
-                ? [['Popular Shows', series], ['Binge-Worthy Series', bingeSeries]]
+                ? [['Popular Shows', popularShows], ['Binge-Worthy Series', bingeShowSuggestions]]
                 : mobileSection === 'Movies'
                   ? [
                       ['Popular Movies', movieOnly.slice(4, 24)],
@@ -680,8 +689,8 @@ function StreamingApp() {
     const desktopRows =
       desktopSection === 'Shows'
         ? [
-            ['Popular Shows', series.slice(0, 24)],
-            ['Binge-Worthy Series', bingeSeries],
+            ['Popular Shows', popularShows],
+            ['Binge-Worthy Series', bingeShowSuggestions],
             ['Comedy & Animation Shows', comedyAndAnimation.filter((item) => item.type === 'series')],
           ]
         : desktopSection === 'Movies'
