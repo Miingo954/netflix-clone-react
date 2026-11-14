@@ -41,7 +41,7 @@ export default function TrailerPlayer({
 }) {
   const host = useRef(null)
   const player = useRef(null)
-  const pendingPlayRequest = useRef(false)
+  const pendingPlayRequest = useRef(null)
   const reportMuted = useEffectEvent((muted) => onMutedChange?.(muted))
   const reportPlaying = useEffectEvent((playing) => onPlayingChange?.(playing))
 
@@ -51,7 +51,7 @@ export default function TrailerPlayer({
       toggleSound() {
         const current = player.current
         if (!current?.getPlayerState) {
-          pendingPlayRequest.current = true
+          pendingPlayRequest.current = 'sound'
           return
         }
         const wasMuted = current.isMuted()
@@ -63,6 +63,19 @@ export default function TrailerPlayer({
           current.mute()
         }
         onMutedChange?.(!wasMuted)
+      },
+      togglePlayback() {
+        const current = player.current
+        if (!current?.getPlayerState) {
+          pendingPlayRequest.current = 'muted'
+          return
+        }
+        if (current.getPlayerState() === 1) current.pauseVideo()
+        else {
+          current.mute()
+          current.playVideo()
+          reportMuted(true)
+        }
       },
     }),
     [onMutedChange]
@@ -93,11 +106,14 @@ export default function TrailerPlayer({
             player.current = target
             disableCaptions(target)
             if (pendingPlayRequest.current) {
-              pendingPlayRequest.current = false
-              target.unMute()
-              target.setVolume(100)
+              const requestedPlayback = pendingPlayRequest.current
+              pendingPlayRequest.current = null
+              if (requestedPlayback === 'sound') {
+                target.unMute()
+                target.setVolume(100)
+              } else target.mute()
               target.playVideo()
-              reportMuted(false)
+              reportMuted(requestedPlayback !== 'sound')
             } else {
               target.mute()
               if (!isMobile) target.playVideo()
@@ -121,7 +137,9 @@ export default function TrailerPlayer({
                   frame.classList.add('youtube-trailer-ready')
                 }, 150)
               }
-            } else if (!disposed && data === 0) reportPlaying(false)
+            } else if (!disposed && (data === 0 || data === 2)) {
+              reportPlaying(false)
+            }
           },
         },
       })

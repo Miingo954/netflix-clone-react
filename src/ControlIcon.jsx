@@ -7,6 +7,7 @@ export default function ControlIcon({ name, ...props }) {
     heart: <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z" />,
     like: <><path d="M7 10v11H3V10h4Zm0 0 5-8c2 0 3 1 2 4l-1 4h6a2 2 0 0 1 2 2l-2 7a2 2 0 0 1-2 2H7" /></>,
     dislike: <><path d="M7 14V3H3v11h4Zm0 0 5 8c2 0 3-1 2-4l-1-4h6a2 2 0 0 0 2-2l-2-7a2 2 0 0 0-2-2H7" /></>,
+    pause: <><path d="M8 5v14" /><path d="M16 5v14" /></>,
   }
   return (
     <svg className="control-icon" width="18" height="18" viewBox="0 0 24 24" fill={name === 'play' ? 'currentColor' : 'none'} stroke={name === 'play' ? 'none' : 'currentColor'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false" style={{ display: 'inline-block', verticalAlign: '-0.2em', flexShrink: 0 }} {...props}>

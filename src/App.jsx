@@ -657,6 +657,16 @@ function StreamingApp() {
         {isMobileViewport && !mobileTrailerPlaying && (
           <img className="mobile-hero-poster" src={feature.backdrop} alt="" />
         )}
+        {isMobileViewport && (
+          <button
+            type="button"
+            className={`mobile-netflix-playback${mobileTrailerPlaying ? ' is-playing' : ''}`}
+            aria-label={mobileTrailerPlaying ? 'Pause trailer' : 'Play trailer'}
+            onClick={() => heroPlayer.current?.togglePlayback()}
+          >
+            <ControlIcon name={mobileTrailerPlaying ? 'pause' : 'play'} />
+          </button>
+        )}
         <div className="hero-shade" />
         <div className="hero-copy" key={feature.videoId}>
           <p className="eyebrow">FEATURED TRAILER</p>
@@ -668,10 +678,30 @@ function StreamingApp() {
           </button>
           <button
             className="secondary"
-            onClick={() => heroPlayer.current?.toggleSound()}
+            onClick={() =>
+              isMobileViewport
+                ? heroPlayer.current?.togglePlayback()
+                : heroPlayer.current?.toggleSound()
+            }
           >
-            <ControlIcon name={isMobileViewport ? 'play' : muted ? 'muted' : 'sound'} />{' '}
-            {isMobileViewport ? 'Play trailer' : muted ? 'Turn sound on' : 'Mute'}
+            <ControlIcon
+              name={
+                isMobileViewport
+                  ? mobileTrailerPlaying
+                    ? 'pause'
+                    : 'play'
+                  : muted
+                    ? 'muted'
+                    : 'sound'
+              }
+            />{' '}
+            {isMobileViewport
+              ? mobileTrailerPlaying
+                ? 'Pause trailer'
+                : 'Play trailer'
+              : muted
+                ? 'Turn sound on'
+                : 'Mute'}
           </button>
           <button className="secondary" onClick={nextTrailer}>
             Next suggestion ›
