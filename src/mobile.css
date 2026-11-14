@@ -101,6 +101,9 @@
     max-width: none;
     animation: title-arrival 0.7s cubic-bezier(0.2, 0.85, 0.25, 1) both;
   }
+  .video-hero .hero-copy .primary {
+    display: none;
+  }
   .hero-copy h1 {
     font-size: clamp(1.85rem, 8vw, 2.6rem);
     line-height: 1.08;
