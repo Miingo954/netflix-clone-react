@@ -40,6 +40,7 @@ export default function TrailerPlayer({
 }) {
   const host = useRef(null)
   const player = useRef(null)
+  const pendingPlayRequest = useRef(false)
   const reportMuted = useEffectEvent((muted) => onMutedChange?.(muted))
 
   useImperativeHandle(
@@ -47,7 +48,10 @@ export default function TrailerPlayer({
     () => ({
       toggleSound() {
         const current = player.current
-        if (!current?.getPlayerState) return
+        if (!current?.getPlayerState) {
+          pendingPlayRequest.current = true
+          return
+        }
         const wasMuted = current.isMuted()
         if (wasMuted) {
           current.unMute()
@@ -85,9 +89,17 @@ export default function TrailerPlayer({
             if (disposed) return
             player.current = target
             disableCaptions(target)
-            target.mute()
-            target.playVideo()
-            reportMuted(true)
+            if (pendingPlayRequest.current) {
+              pendingPlayRequest.current = false
+              target.unMute()
+              target.setVolume(100)
+              target.playVideo()
+              reportMuted(false)
+            } else {
+              target.mute()
+              target.playVideo()
+              reportMuted(true)
+            }
           },
           onAutoplayBlocked({ target }) {
             if (disposed) return
@@ -114,6 +126,7 @@ export default function TrailerPlayer({
       disposed = true
       window.clearTimeout(revealTimer)
       player.current = null
+      pendingPlayRequest.current = false
       instance?.destroy()
       container.replaceChildren()
     }
