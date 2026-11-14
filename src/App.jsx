@@ -396,6 +396,7 @@ function StreamingApp() {
       return nextList
     })
   const feature = trailers[trailerIndex]
+  const isMobileViewport = window.matchMedia('(max-width: 700px)').matches
   const allMovies = useMemo(
     () =>
       [
@@ -632,6 +633,7 @@ function StreamingApp() {
         id="home"
         style={{
           backgroundImage: 'linear-gradient(115deg, #080808 0%, #151515 58%, #24090b 100%)',
+          '--mobile-hero-image': `url(https://i.ytimg.com/vi/${feature.videoId}/maxresdefault.jpg)`,
         }}
         onTouchStart={startHeroSwipe}
         onTouchEnd={finishHeroSwipe}
@@ -639,13 +641,15 @@ function StreamingApp() {
           heroTouch.current = null
         }}
       >
-        <TrailerPlayer
-          ref={heroPlayer}
-          videoId={feature.videoId}
-          className="hero-video"
-          title={`${feature.title} video`}
-          onMutedChange={setMuted}
-        />
+        {!isMobileViewport && (
+          <TrailerPlayer
+            ref={heroPlayer}
+            videoId={feature.videoId}
+            className="hero-video"
+            title={`${feature.title} video`}
+            onMutedChange={setMuted}
+          />
+        )}
         <div className="hero-shade" />
         <div className="hero-copy" key={feature.videoId}>
           <p className="eyebrow">FEATURED TRAILER</p>
@@ -655,8 +659,16 @@ function StreamingApp() {
           <button className="primary" onClick={() => setSelected({ ...feature, isTrailer: true })}>
             <ControlIcon name="play" /> Play
           </button>
-          <button className="secondary" onClick={() => heroPlayer.current?.toggleSound()}>
-            <ControlIcon name={muted ? 'muted' : 'sound'} /> {muted ? 'Turn sound on' : 'Mute'}
+          <button
+            className="secondary mobile-trailer-trigger"
+            onClick={() =>
+              isMobileViewport
+                ? setSelected({ ...feature, isTrailer: true })
+                : heroPlayer.current?.toggleSound()
+            }
+          >
+            <ControlIcon name={isMobileViewport ? 'play' : muted ? 'muted' : 'sound'} />{' '}
+            {isMobileViewport ? 'Play trailer' : muted ? 'Turn sound on' : 'Mute'}
           </button>
           <button className="secondary" onClick={nextTrailer}>
             Next suggestion ›
