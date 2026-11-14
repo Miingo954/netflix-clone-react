@@ -82,7 +82,12 @@
     clip-path: none;
   }
   .video-hero .hero-video.youtube-trailer-pending {
-    opacity: 0.001 !important;
+    opacity: 1 !important;
+    filter: brightness(0);
+  }
+  .video-hero .hero-video.youtube-trailer-ready {
+    filter: none;
+    transition: filter 0.2s ease;
   }
   .video-hero .hero-video.youtube-trailer-ready {
     transform: scale(1.12) !important;
