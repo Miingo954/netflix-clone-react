@@ -34,6 +34,7 @@ const excludedTitles = new Set([
   'The Lion King',
   'Lilo & Stitch',
   'Mufasa: The Lion King',
+  'Vision Quest',
 ])
 
 function isStreamworthy(item) {
@@ -283,7 +284,7 @@ function StreamingApp() {
     async function loadMovies() {
       setApiStatus('Loading live movies and TV shows…')
       try {
-        const [popularMovies, popularSeries, topRatedSeries, trending, upcoming, upcomingShows, outerBanks, familyGuy] =
+        const [popularMovies, popularSeries, topRatedSeries, trending, upcoming, upcomingShows, outerBanks, familyGuy, theOASearch] =
           await Promise.all([
             Promise.all([1, 2, 3].map((page) => tmdbRequest(`/movie/popular?page=${page}`))),
             Promise.all([1, 2, 3].map((page) => tmdbRequest(`/tv/popular?page=${page}`))),
@@ -293,6 +294,7 @@ function StreamingApp() {
             Promise.all([1, 2].map((page) => tmdbRequest(`/tv/on_the_air?page=${page}`))),
             tmdbRequest('/tv/100757'),
             tmdbRequest('/tv/1434'),
+            tmdbRequest('/search/tv?query=The%20OA'),
           ])
         const movies = popularMovies.flatMap((page) => page.results)
           .filter(isStreamworthy)
@@ -310,7 +312,9 @@ function StreamingApp() {
           )
           .slice(0, 6)
           .map((item) => toTmdbMovie(item, item.media_type === 'tv' ? 'series' : 'movie'))
-        const requestedSeries = [outerBanks, familyGuy]
+        const theOA = theOASearch.results?.find((item) => item.name === 'The OA')
+        const requestedSeries = [theOA, outerBanks, familyGuy]
+          .filter(Boolean)
           .filter(isStreamworthy)
           .map((item) => toTmdbMovie(item, 'series'))
         const upcomingResults = [
@@ -426,7 +430,8 @@ function StreamingApp() {
   const series = allMovies.filter((movie) => movie.type === 'series')
   const outerBanks = series.find((movie) => movie.title === 'Outer Banks')
   const familyGuy = series.find((movie) => movie.title === 'Family Guy')
-  const bingeSeries = [outerBanks, familyGuy, ...series].filter(
+  const theOA = series.find((movie) => movie.title === 'The OA')
+  const bingeSeries = [theOA, outerBanks, familyGuy, ...series].filter(
     (movie, index, titles) => movie && titles.findIndex((item) => item?.id === movie.id) === index
   )
   const dramaAndAction = [...movieOnly, ...series]
@@ -581,24 +586,24 @@ function StreamingApp() {
           : location.pathname === '/movies'
             ? 'Movies'
             : location.pathname === '/new-hot'
-              ? 'New & Hot'
+              ? 'New & Popular'
               : location.pathname === '/notifications'
                 ? 'Notifications'
                 : location.pathname === '/search'
                   ? 'Search'
                   : location.pathname === '/my-netflix'
-                    ? 'My Netflix'
+                    ? 'My List'
               : 'Home'
       const mobileFeatures =
         mobileSection === 'Shows'
           ? bingeSeries.slice(0, 4)
           : mobileSection === 'Movies'
             ? movieOnly.slice(0, 4)
-            : mobileSection === 'New & Hot'
+            : mobileSection === 'New & Popular'
               ? dramaAndAction.slice(0, 4)
               : mobileSection === 'Notifications'
                 ? upcomingTitles.slice(0, 4)
-                : mobileSection === 'My Netflix'
+                : mobileSection === 'My List'
                   ? savedMovies.slice(0, 4)
                   : mobileSection === 'Search' && searchResults.length
                     ? searchResults.slice(0, 4)
@@ -606,9 +611,9 @@ function StreamingApp() {
       const mobileRows =
         mobileSection === 'Notifications'
           ? [['Coming Soon', upcomingTitles]]
-          : mobileSection === 'New & Hot'
+          : mobileSection === 'New & Popular'
             ? [['Trending Now', dramaAndAction], ['Coming Soon', upcomingTitles]]
-          : mobileSection === 'My Netflix'
+          : mobileSection === 'My List'
             ? [['My List', savedMovies]]
             : mobileSection === 'Search'
               ? [[search ? `Results for “${search}”` : 'Browse the catalog', search ? searchResults : allMovies]]
@@ -627,7 +632,7 @@ function StreamingApp() {
         key={location.pathname}
         section={mobileSection}
         features={
-          mobileFeatures.length || ['My Netflix', 'Search', 'Notifications'].includes(mobileSection)
+          mobileFeatures.length || ['My List', 'Search', 'Notifications'].includes(mobileSection)
             ? mobileFeatures
             : allMovies.slice(0, 4)
         }
@@ -653,9 +658,9 @@ function StreamingApp() {
             if (event.target.closest('a')) setProfileOpen(false)
           }}
         >
-          <a href="#home">Home</a>
+          <a href="#shows">Shows</a>
+          <a href="#movies">Movies</a>
           <a href="#new">New & Popular</a>
-          <a href="#list">My List</a>
           <button
             className="mobile-account-action"
             onClick={() => (user ? signOut(auth) : setGuest(false))}
@@ -797,11 +802,12 @@ function StreamingApp() {
           </button>
         </div>
       </section>
-      <Row title="Popular Movies" movies={movieOnly.slice(0, 10)} select={openMovie} />
+      <Row id="movies" title="Popular Movies" movies={movieOnly.slice(0, 10)} select={openMovie} />
       <section className="api-note" id="new">
         <span className="live-dot" /> {apiStatus || 'Sign in to load live content from TMDB.'}
       </section>
       <Row
+        id="shows"
         title="Binge-Worthy Series"
         movies={bingeSeries.slice(0, 12)}
         select={openMovie}
@@ -883,7 +889,7 @@ function MobileNetflixHome({ section, features, rows, openMovie, inList, toggle,
   const routes = [
     ['Shows', '/shows'],
     ['Movies', '/movies'],
-    ['New & Hot', '/new-hot'],
+    ['New & Popular', '/new-hot'],
   ]
   return (
     <main className="mobile-netflix-home mobile-netflix-page-slide">
@@ -895,7 +901,6 @@ function MobileNetflixHome({ section, features, rows, openMovie, inList, toggle,
         <button className="mobile-netflix-menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-label="Open account menu">{menuOpen ? '×' : '☰'}</button>
         {menuOpen && (
           <div className="mobile-netflix-menu">
-            <button onClick={() => { navigate('/notifications'); setMenuOpen(false) }}>Notifications</button>
             <button onClick={signOutUser}>Sign out</button>
           </div>
         )}
@@ -913,7 +918,7 @@ function MobileNetflixHome({ section, features, rows, openMovie, inList, toggle,
         </form>
       )}
       {section === 'Notifications' && <p className="mobile-netflix-route-note">Upcoming movies and shows</p>}
-      {section === 'My Netflix' && !features.length && <p className="mobile-netflix-empty">Titles you add to My List will appear here.</p>}
+      {section === 'My List' && !features.length && <p className="mobile-netflix-empty">Titles you add to My List will appear here.</p>}
       {!!features.length && <section ref={featureTrack} className="mobile-netflix-feature-track" aria-label="Featured titles">
         {features.map((feature) => (
           <article className="mobile-netflix-feature" key={feature.id}>
@@ -940,7 +945,7 @@ function MobileNetflixHome({ section, features, rows, openMovie, inList, toggle,
       <nav className="mobile-netflix-bottom" aria-label="Netflix app navigation">
         <button className={section === 'Home' ? 'active' : ''} onClick={() => navigate('/')}><span>⌂</span>Home</button>
         <button className={section === 'Search' ? 'active' : ''} onClick={() => navigate('/search')}><span>⌕</span>Search</button>
-        <button className={section === 'My Netflix' ? 'active' : ''} onClick={() => navigate('/my-netflix')}><span className="mobile-netflix-avatar">N</span>My Netflix</button>
+        <button className={section === 'My List' ? 'active' : ''} onClick={() => navigate('/my-netflix')}><span className="mobile-netflix-avatar">N</span>My List</button>
       </nav>
     </main>
   )
