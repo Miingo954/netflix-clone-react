@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useImperativeHandle, useRef } from 'react'
+import { useEffect, useEffectEvent, useImperativeHandle, useRef, useState } from 'react'
 
 let apiPromise
 function disableCaptions(player) {
@@ -40,6 +40,8 @@ export default function TrailerPlayer({
 }) {
   const host = useRef(null)
   const player = useRef(null)
+  const fallbackTimer = useRef(null)
+  const [showPlayFallback, setShowPlayFallback] = useState(false)
   const reportMuted = useEffectEvent((muted) => onMutedChange?.(muted))
 
   useImperativeHandle(
@@ -87,6 +89,7 @@ export default function TrailerPlayer({
             target.mute()
             target.playVideo()
             reportMuted(true)
+            fallbackTimer.current = window.setTimeout(() => setShowPlayFallback(true), 1200)
           },
           onAutoplayBlocked({ target }) {
             if (disposed) return
@@ -96,6 +99,8 @@ export default function TrailerPlayer({
           },
           onStateChange({ target, data }) {
             if (!disposed && data === 1) {
+              window.clearTimeout(fallbackTimer.current)
+              setShowPlayFallback(false)
               disableCaptions(target)
               reportMuted(target.isMuted())
               if (!revealTimer && !frame.classList.contains('youtube-trailer-ready')) {
@@ -112,11 +117,31 @@ export default function TrailerPlayer({
     return () => {
       disposed = true
       window.clearTimeout(revealTimer)
+      window.clearTimeout(fallbackTimer.current)
       player.current = null
       instance?.destroy()
       container.replaceChildren()
     }
   }, [videoId, title, className, controls])
 
-  return <span ref={host} style={{ display: 'contents' }} />
+  return (
+    <>
+      <span ref={host} style={{ display: 'contents' }} />
+      {showPlayFallback && (
+        <button
+          type="button"
+          className="trailer-play-fallback"
+          onClick={() => {
+            const current = player.current
+            if (!current) return
+            current.mute()
+            current.playVideo()
+            reportMuted(true)
+          }}
+        >
+          ▶ Play trailer
+        </button>
+      )}
+    </>
+  )
 }
