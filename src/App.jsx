@@ -455,6 +455,11 @@ function StreamingApp() {
   ].filter(
     (movie, index, titles) => movie && titles.findIndex((item) => item?.id === movie.id) === index
   )
+  const actionMovies = movieOnly.filter((movie) => /action|adventure/i.test(movie.genre || ''))
+  const comedyMovies = movieOnly.filter((movie) => /comedy|animation|family/i.test(movie.genre || ''))
+  const variedMovieFeatures = [movieOnly[2], movieOnly[11], comedyMovies[2], actionMovies[5]]
+    .filter(Boolean)
+    .filter((movie, index, titles) => titles.findIndex((item) => item.id === movie.id) === index)
   const savedMovies = allMovies.filter((movie) => myList.includes(movie.id))
   const searchResults = search.trim()
     ? allMovies.filter((movie) => movie.title.toLowerCase().includes(search.trim().toLowerCase()))
@@ -610,7 +615,7 @@ function StreamingApp() {
         mobileSection === 'Shows'
           ? bingeSeries.slice(0, 4)
           : mobileSection === 'Movies'
-            ? movieOnly.slice(0, 4)
+            ? variedMovieFeatures
             : mobileSection === 'New & Popular'
               ? dramaAndAction.slice(0, 4)
               : mobileSection === 'Notifications'
@@ -632,7 +637,12 @@ function StreamingApp() {
               : mobileSection === 'Shows'
                 ? [['Popular Shows', series], ['Binge-Worthy Series', bingeSeries]]
                 : mobileSection === 'Movies'
-                  ? [['Popular Movies', movieOnly], ['Action, Drama & Adventure', dramaAndAction]]
+                  ? [
+                      ['Popular Movies', movieOnly.slice(4, 24)],
+                      ['Action & Adventure', actionMovies],
+                      ['Comedy, Animation & Family', comedyMovies],
+                      ['More Movies for You', movieOnly.slice(24)],
+                    ]
                   : [
                       ['Binges That Blow Up the Group Chat', bingeSeries],
                       ['Popular Movies', movieOnly],
@@ -660,6 +670,42 @@ function StreamingApp() {
     )
     }
 
+  if (['/shows', '/movies', '/new-hot'].includes(location.pathname)) {
+    const desktopSection =
+      location.pathname === '/shows'
+        ? 'Shows'
+        : location.pathname === '/movies'
+          ? 'Movies'
+          : 'New & Popular'
+    const desktopRows =
+      desktopSection === 'Shows'
+        ? [
+            ['Popular Shows', series.slice(0, 24)],
+            ['Binge-Worthy Series', bingeSeries],
+            ['Comedy & Animation Shows', comedyAndAnimation.filter((item) => item.type === 'series')],
+          ]
+        : desktopSection === 'Movies'
+          ? [
+              ['Popular Movies', movieOnly.slice(4, 24)],
+              ['Action & Adventure', actionMovies],
+              ['Comedy, Animation & Family', comedyMovies],
+              ['More Movies for You', movieOnly.slice(24)],
+            ]
+          : [
+              ['Trending Now', allMovies.slice(0, 24)],
+              ['Coming Soon', upcomingTitles],
+              ['New Movies', movieOnly.slice(20, 45)],
+            ]
+    return (
+      <DesktopNetflixCatalog
+        section={desktopSection}
+        rows={desktopRows}
+        navigate={navigate}
+        openMovie={openMovie}
+      />
+    )
+  }
+
   return (
     <main className="app-shell">
       <header className="nav">
@@ -670,9 +716,9 @@ function StreamingApp() {
             if (event.target.closest('a')) setProfileOpen(false)
           }}
         >
-          <a href="#shows">Shows</a>
-          <a href="#movies">Movies</a>
-          <a href="#new">New & Popular</a>
+          <button onClick={() => navigate('/shows')}>Shows</button>
+          <button onClick={() => navigate('/movies')}>Movies</button>
+          <button onClick={() => navigate('/new-hot')}>New & Popular</button>
           <button
             className="mobile-account-action"
             onClick={() => (user ? signOut(auth) : setGuest(false))}
@@ -978,6 +1024,40 @@ function MobileNetflixRow({ title, movies, openMovie }) {
         ))}
       </div>
     </section>
+  )
+}
+
+function DesktopNetflixCatalog({ section, rows, navigate, openMovie }) {
+  const paths = [
+    ['Shows', '/shows'],
+    ['Movies', '/movies'],
+    ['New & Popular', '/new-hot'],
+  ]
+  return (
+    <main className="app-shell desktop-netflix-catalog">
+      <header className="nav">
+        <button className="desktop-netflix-wordmark" onClick={() => navigate('/')}>NETFLIX</button>
+        <nav>
+          {paths.map(([label, path]) => (
+            <button
+              className={section === label ? 'active' : ''}
+              key={path}
+              onClick={() => navigate(path)}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
+      </header>
+      <section className="desktop-catalog-heading">
+        <p>Browse</p>
+        <h1>{section}</h1>
+      </section>
+      {rows.map(([title, movies]) => (
+        <Row key={title} title={title} movies={movies} select={openMovie} />
+      ))}
+      <footer>Streaming-clone portfolio project. Movie and TV data provided by TMDB.</footer>
+    </main>
   )
 }
 

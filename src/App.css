@@ -28,6 +28,42 @@
   text-decoration: none;
   font-size: 0.9rem;
 }
+.nav nav button,
+.desktop-netflix-wordmark {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #ddd;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.9rem;
+}
+.nav nav button:hover,
+.nav nav button.active {
+  color: #fff;
+}
+.desktop-netflix-wordmark {
+  color: #e50914;
+  font-size: 1.55rem;
+  font-weight: 900;
+  letter-spacing: -1px;
+}
+.desktop-catalog-heading {
+  padding: 72px 4vw 30px;
+  background: linear-gradient(135deg, #1b1b1b, #080808 68%);
+}
+.desktop-catalog-heading p {
+  margin: 0;
+  color: #e50914;
+  font-size: .75rem;
+  font-weight: 800;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
+.desktop-catalog-heading h1 {
+  margin: 8px 0 0;
+  font-size: clamp(2.8rem, 6vw, 5.4rem);
+}
 .search {
   margin-left: auto;
   width: min(290px, 24vw);
