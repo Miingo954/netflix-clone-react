@@ -66,6 +66,7 @@ export default function TrailerPlayer({
     let disposed = false
     let instance
     let revealTimer
+    const retryTimers = []
     const container = host.current
     const frame = document.createElement('iframe')
     frame.className = className || ''
@@ -76,6 +77,15 @@ export default function TrailerPlayer({
     frame.allowFullscreen = true
     frame.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&controls=${controls ? 1 : 0}&rel=0&cc_load_policy=0&iv_load_policy=3&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`
     container.appendChild(frame)
+    const startMuted = () => {
+      const current = player.current
+      if (!current?.playVideo || current.getPlayerState?.() === 1) return
+      current.mute()
+      current.playVideo()
+      reportMuted(true)
+    }
+    document.addEventListener('touchstart', startMuted, { passive: true })
+    document.addEventListener('pointerdown', startMuted, { passive: true })
     loadYouTube().then((YT) => {
       if (disposed) return
       instance = new YT.Player(frame, {
@@ -87,6 +97,9 @@ export default function TrailerPlayer({
             target.mute()
             target.playVideo()
             reportMuted(true)
+            ;[250, 750, 1500].forEach((delay) => {
+              retryTimers.push(window.setTimeout(startMuted, delay))
+            })
           },
           onAutoplayBlocked({ target }) {
             if (disposed) return
@@ -96,6 +109,7 @@ export default function TrailerPlayer({
           },
           onStateChange({ target, data }) {
             if (!disposed && data === 1) {
+              retryTimers.forEach(window.clearTimeout)
               disableCaptions(target)
               reportMuted(target.isMuted())
               if (!revealTimer && !frame.classList.contains('youtube-trailer-ready')) {
@@ -112,6 +126,9 @@ export default function TrailerPlayer({
     return () => {
       disposed = true
       window.clearTimeout(revealTimer)
+      retryTimers.forEach(window.clearTimeout)
+      document.removeEventListener('touchstart', startMuted)
+      document.removeEventListener('pointerdown', startMuted)
       player.current = null
       instance?.destroy()
       container.replaceChildren()
