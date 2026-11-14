@@ -458,6 +458,16 @@ function StreamingApp() {
   const dramaAndAction = [...movieOnly, ...series]
     .filter((movie) => !['Family Guy', 'The Simpsons'].includes(movie.title))
     .slice(0, 10)
+  const homePopularMovies = movieOnly.slice(0, 18)
+  const homePopularMovieIds = new Set(homePopularMovies.map((movie) => movie.id))
+  const homeActionDrama = [...movieOnly, ...series]
+    .filter(
+      (movie) =>
+        !homePopularMovieIds.has(movie.id) &&
+        !['Family Guy', 'The Simpsons'].includes(movie.title) &&
+        /action|adventure|drama|sci-fi/i.test(movie.genre || '')
+    )
+    .slice(0, 20)
   const comedyAndAnimation = [
     familyGuy,
     ...allMovies.filter((movie) => /comedy|animation|family/i.test(movie.genre || '')),
@@ -654,8 +664,8 @@ function StreamingApp() {
                     ]
                   : [
                       ['Binges That Blow Up the Group Chat', bingeSeries],
-                      ['Popular Movies', movieOnly],
-                      ['Action, Drama & Adventure', dramaAndAction],
+                      ['Popular Movies', homePopularMovies],
+                      ['Action, Drama & Adventure', homeActionDrama],
                       ['Comedy & Animation', comedyAndAnimation],
                     ]
       return (
