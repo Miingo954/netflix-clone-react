@@ -2,6 +2,326 @@
 .mobile-account-action {
   display: none;
 }
+
+/* Dedicated Netflix phone experience. These nodes are not rendered on desktop. */
+.mobile-netflix-home,
+.mobile-netflix-title {
+  min-height: 100svh;
+  overflow-x: hidden;
+  background: #000;
+  color: #fff;
+  padding-bottom: 96px;
+}
+.mobile-netflix-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 18px 12px;
+}
+.mobile-netflix-header > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mobile-netflix-header b {
+  color: #e50914;
+  font-size: 2.7rem;
+  line-height: 1;
+  font-family: Arial Black, sans-serif;
+}
+.mobile-netflix-header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+.mobile-netflix-header-actions span {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  font-size: 1.7rem;
+}
+.mobile-netflix-filters {
+  display: grid;
+  grid-template-columns: repeat(3, max-content);
+  gap: 9px;
+  padding: 4px 18px 18px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.mobile-netflix-filters button {
+  min-height: 43px;
+  padding: 0 18px;
+  border: 1px solid #686868;
+  border-radius: 22px;
+  background: #2d2d2d;
+  color: #fff;
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+.mobile-netflix-feature {
+  margin: 0 18px 20px;
+  overflow: hidden;
+  border: 1px solid #3a3a3a;
+  border-radius: 18px;
+  background: #101010;
+}
+.mobile-netflix-feature-image {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: min(128vw, 590px);
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: #161616;
+  color: #fff;
+}
+.mobile-netflix-feature-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.mobile-netflix-feature-gradient {
+  position: absolute;
+  inset: 42% 0 0;
+  background: linear-gradient(transparent, rgba(0,0,0,.2) 32%, #101010 100%);
+}
+.mobile-netflix-feature-image strong,
+.mobile-netflix-feature-image small {
+  position: absolute;
+  z-index: 1;
+  right: 18px;
+  left: 18px;
+  text-align: center;
+}
+.mobile-netflix-feature-image strong {
+  bottom: 62px;
+  font-size: clamp(2rem, 9vw, 3.4rem);
+  line-height: .98;
+  text-shadow: 0 3px 16px #000;
+}
+.mobile-netflix-feature-image small {
+  bottom: 31px;
+  color: #ddd;
+  font-size: .85rem;
+}
+.mobile-netflix-feature-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 0 14px 14px;
+}
+.mobile-netflix-feature-actions button,
+.mobile-title-primary,
+.mobile-title-download {
+  min-height: 48px;
+  border: 0;
+  border-radius: 24px;
+  background: #333;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 800;
+}
+.mobile-netflix-feature-actions .mobile-netflix-play,
+.mobile-title-primary {
+  background: #fff;
+  color: #070707;
+}
+.mobile-netflix-row {
+  padding: 5px 0 20px 18px;
+}
+.mobile-netflix-row h2 {
+  margin: 0 0 11px;
+  padding-right: 18px;
+  font-size: 1.25rem;
+}
+.mobile-netflix-row > div {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 31vw;
+  gap: 10px;
+  overflow-x: auto;
+  padding-right: 18px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.mobile-netflix-row button {
+  aspect-ratio: 2 / 3;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 6px;
+  background: #181818;
+  scroll-snap-align: start;
+}
+.mobile-netflix-row img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.mobile-netflix-bottom {
+  position: fixed;
+  z-index: 20;
+  right: 16px;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  left: 16px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 8px 6px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 34px;
+  background: rgba(39,39,39,.94);
+  box-shadow: 0 12px 32px rgba(0,0,0,.55);
+  backdrop-filter: blur(18px);
+}
+.mobile-netflix-bottom button {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: #aaa;
+  font-size: .68rem;
+}
+.mobile-netflix-bottom button > span:first-child {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+.mobile-netflix-bottom .active { color: #fff; }
+.mobile-netflix-avatar {
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #e50914;
+  color: white;
+  font-size: .8rem !important;
+  font-weight: 900;
+}
+.mobile-title-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: #111;
+}
+.mobile-title-media > img,
+.mobile-title-video {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  object-fit: cover;
+}
+.mobile-title-close {
+  position: absolute;
+  z-index: 4;
+  top: 14px;
+  right: 14px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(30,30,30,.9);
+  color: #fff;
+  font-size: 2rem;
+  line-height: 1;
+}
+.mobile-title-playback {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  padding: 0;
+  border: 3px solid #e50914;
+  border-radius: 50%;
+  background: rgba(0,0,0,.72);
+  color: #fff;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(.92);
+  transition: opacity .22s ease, transform .22s ease;
+  pointer-events: none;
+}
+.mobile-title-playback.visible {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  pointer-events: auto;
+}
+.mobile-title-copy { padding: 20px 18px 34px; }
+.mobile-title-copy h1 {
+  margin: 0 0 9px;
+  font-size: 1.8rem;
+}
+.mobile-title-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 16px;
+  color: #d0d0d0;
+  font-size: .88rem;
+}
+.mobile-title-meta span,
+.mobile-title-meta b {
+  padding: 2px 5px;
+  border: 1px solid #777;
+  border-radius: 3px;
+  font-size: .72rem;
+}
+.mobile-title-primary,
+.mobile-title-download {
+  width: 100%;
+  margin: 0 0 10px;
+  border-radius: 8px;
+}
+.mobile-title-description {
+  margin: 18px 0 8px;
+  color: #f0f0f0;
+  line-height: 1.45;
+}
+.mobile-title-cast {
+  color: #888;
+  font-size: .8rem;
+}
+.mobile-title-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 78px);
+  gap: 16px;
+  margin: 24px 0 18px;
+}
+.mobile-title-actions button {
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  border: 0;
+  background: transparent;
+  color: #fff;
+}
+.mobile-title-actions button span:last-child { font-size: .75rem; }
+.mobile-share-icon { font-size: 1.8rem; }
+.mobile-title-rule {
+  width: 115px;
+  height: 4px;
+  margin-bottom: 18px;
+  background: #e50914;
+}
+.mobile-title-copy h2 { font-size: 1.35rem; }
+.mobile-title-suggestions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.mobile-title-suggestions img {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  border-radius: 5px;
+  object-fit: cover;
+}
 @media (max-width: 700px) {
   .app-shell,
   .title-page,
@@ -90,30 +410,6 @@
     object-fit: cover;
     object-position: center;
     pointer-events: none;
-  }
-  .mobile-netflix-playback {
-    position: absolute;
-    top: calc(28.125vw - 25px);
-    left: calc(50% - 25px);
-    z-index: 4;
-    width: 50px;
-    height: 50px;
-    display: grid;
-    place-items: center;
-    padding: 0;
-    border: 3px solid #e50914;
-    border-radius: 50%;
-    background: rgba(8, 8, 8, 0.76);
-    color: #fff;
-    box-shadow: 0 3px 18px rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-  }
-  .mobile-netflix-playback.is-playing {
-    opacity: 0.88;
-  }
-  .mobile-netflix-playback .control-icon {
-    width: 21px;
-    height: 21px;
   }
   .video-hero .hero-video.youtube-trailer-pending {
     opacity: 1 !important;

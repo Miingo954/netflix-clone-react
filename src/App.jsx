@@ -560,6 +560,22 @@ function StreamingApp() {
       />
     )
 
+  if (isMobileViewport)
+    return (
+      <MobileNetflixHome
+        feature={movieOnly[0] || allMovies[0]}
+        rows={[
+          ['Binges That Blow Up the Group Chat', bingeSeries.slice(0, 10)],
+          ['Popular Movies', movieOnly.slice(0, 10)],
+          ['Action, Drama & Adventure', dramaAndAction.slice(0, 10)],
+          ['Comedy & Animation', comedyAndAnimation.slice(0, 10)],
+        ]}
+        openMovie={openMovie}
+        inList={(id) => myList.includes(id)}
+        toggle={toggle}
+      />
+    )
+
   return (
     <main className="app-shell">
       <header className="nav">
@@ -656,16 +672,6 @@ function StreamingApp() {
         />
         {isMobileViewport && !mobileTrailerPlaying && (
           <img className="mobile-hero-poster" src={feature.backdrop} alt="" />
-        )}
-        {isMobileViewport && (
-          <button
-            type="button"
-            className={`mobile-netflix-playback${mobileTrailerPlaying ? ' is-playing' : ''}`}
-            aria-label={mobileTrailerPlaying ? 'Pause trailer' : 'Play trailer'}
-            onClick={() => heroPlayer.current?.togglePlayback()}
-          >
-            <ControlIcon name={mobileTrailerPlaying ? 'pause' : 'play'} />
-          </button>
         )}
         <div className="hero-shade" />
         <div className="hero-copy" key={feature.videoId}>
@@ -791,6 +797,65 @@ function StreamingRouteSkeleton() {
   )
 }
 
+function MobileNetflixHome({ feature, rows, openMovie, inList, toggle }) {
+  const [section, setSection] = useState('Home')
+  if (!feature) return <StreamingRouteSkeleton />
+  return (
+    <main className="mobile-netflix-home">
+      <header className="mobile-netflix-header">
+        <div><b>N</b><h1>{section}</h1></div>
+        <div className="mobile-netflix-header-actions" aria-hidden="true"><span>⇩</span><span>♧</span></div>
+      </header>
+      <nav className="mobile-netflix-filters" aria-label="Browse Netflix">
+        {['Shows', 'Movies', 'New & Hot'].map((item) => (
+          <button key={item} onClick={() => setSection(item)}>{item}</button>
+        ))}
+      </nav>
+      <section className="mobile-netflix-feature">
+        <button className="mobile-netflix-feature-image" onClick={() => openMovie(feature)}>
+          <img src={feature.poster || feature.image} alt={`${feature.title} poster`} />
+          <span className="mobile-netflix-feature-gradient" />
+          <strong>{feature.title}</strong>
+          <small>{feature.genre || 'Featured today'}</small>
+        </button>
+        <div className="mobile-netflix-feature-actions">
+          <button className="mobile-netflix-play" onClick={() => openMovie(feature)}>
+            <ControlIcon name="play" /> Play
+          </button>
+          <button onClick={() => toggle(feature.id)}>
+            <ControlIcon name={inList(feature.id) ? 'check' : 'plus'} /> My List
+          </button>
+        </div>
+      </section>
+      {rows.map(([title, movies]) => (
+        <MobileNetflixRow key={title} title={title} movies={movies} openMovie={openMovie} />
+      ))}
+      <nav className="mobile-netflix-bottom" aria-label="Netflix app navigation">
+        <button className="active"><span>⌂</span>Home</button>
+        <button><span>▣</span>Clips</button>
+        <button><span>⌕</span>Search</button>
+        <button><span className="mobile-netflix-avatar">N</span>My Netflix</button>
+      </nav>
+    </main>
+  )
+}
+
+function MobileNetflixRow({ title, movies, openMovie }) {
+  if (!movies.length) return null
+  return (
+    <section className="mobile-netflix-row">
+      <h2>{title}</h2>
+      <div>
+        {movies.map((movie) => (
+          <button key={movie.id} onClick={() => openMovie(movie)}>
+            <img src={movie.poster || movie.image} alt={`${movie.title} poster`} />
+          </button>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 function Row({ title, movies, select, empty, id }) {
   const cardsRef = useRef(null)
   const scrollRow = (direction) =>
@@ -840,6 +905,8 @@ function TitleLandingPage({ movie, back, inList, toggle }) {
   const [season, setSeason] = useState(1)
   const [episodes, setEpisodes] = useState(movie.episodes || [])
   const [titleMuted, setTitleMuted] = useState(false)
+  const [titlePlaying, setTitlePlaying] = useState(false)
+  const [mobileControlsVisible, setMobileControlsVisible] = useState(true)
   const titlePlayer = useRef(null)
 
   useEffect(() => {
@@ -889,6 +956,31 @@ function TitleLandingPage({ movie, back, inList, toggle }) {
         runtime: 45 + index * 2,
         overview: 'Continue the story in this episode.',
       }))
+
+  useEffect(() => {
+    if (!titlePlaying) {
+      setMobileControlsVisible(true)
+      return
+    }
+    const timer = window.setTimeout(() => setMobileControlsVisible(false), 1100)
+    return () => window.clearTimeout(timer)
+  }, [titlePlaying])
+
+  if (window.matchMedia('(max-width: 700px)').matches)
+    return (
+      <MobileNetflixTitle
+        title={title}
+        back={back}
+        inList={inList}
+        toggle={toggle}
+        player={titlePlayer}
+        playing={titlePlaying}
+        setPlaying={setTitlePlaying}
+        controlsVisible={mobileControlsVisible}
+        revealControls={() => setMobileControlsVisible(true)}
+      />
+    )
+
   return (
     <main className="title-page">
       <header className="title-nav">
@@ -988,6 +1080,75 @@ function TitleLandingPage({ movie, back, inList, toggle }) {
         </section>
       )}
       <footer>Streaming-clone portfolio project. Movie and TV data provided by TMDB.</footer>
+    </main>
+  )
+}
+
+function MobileNetflixTitle({
+  title,
+  back,
+  inList,
+  toggle,
+  player,
+  playing,
+  setPlaying,
+  controlsVisible,
+  revealControls,
+}) {
+  const togglePlayback = () => {
+    revealControls()
+    player.current?.togglePlayback()
+  }
+  return (
+    <main className="mobile-netflix-title">
+      <section className="mobile-title-media" onClick={revealControls}>
+        {title.trailerId ? (
+          <TrailerPlayer
+            ref={player}
+            videoId={title.trailerId}
+            className="mobile-title-video"
+            title={`${title.title} trailer`}
+            onPlayingChange={setPlaying}
+            autoPlay
+          />
+        ) : (
+          <img src={title.backdrop || title.image} alt="" />
+        )}
+        <button className="mobile-title-close" onClick={back} aria-label="Close title">×</button>
+        {title.trailerId && (
+          <button
+            className={`mobile-title-playback${controlsVisible ? ' visible' : ''}`}
+            onClick={(event) => { event.stopPropagation(); togglePlayback() }}
+            aria-label={playing ? 'Pause trailer' : 'Play trailer'}
+          >
+            <ControlIcon name={playing ? 'pause' : 'play'} />
+          </button>
+        )}
+      </section>
+      <section className="mobile-title-copy">
+        <h1>{title.title}</h1>
+        <p className="mobile-title-meta">{title.year} <span>{title.rating}</span> {title.type === 'series' ? `${title.seasons || 1} Season${(title.seasons || 1) === 1 ? '' : 's'}` : 'Movie'} <b>HD</b></p>
+        {title.trailerId && (
+          <button className="mobile-title-primary" onClick={togglePlayback}>
+            <ControlIcon name={playing ? 'pause' : 'play'} /> {playing ? 'Pause' : 'Play'}
+          </button>
+        )}
+        <button className="mobile-title-download"><span>⇩</span> Download</button>
+        <p className="mobile-title-description">{title.description}</p>
+        <p className="mobile-title-cast">Genres: {title.genre}</p>
+        <div className="mobile-title-actions">
+          <button onClick={() => toggle(title.id)}><ControlIcon name={inList ? 'check' : 'plus'} /><span>My List</span></button>
+          <button><ControlIcon name="like" /><span>Rate</span></button>
+          <button><span className="mobile-share-icon">⌁</span><span>Share</span></button>
+        </div>
+        <div className="mobile-title-rule" />
+        <h2>More Like This</h2>
+        <div className="mobile-title-suggestions">
+          {[title.poster || title.image, title.backdrop || title.image, title.image].map((image, index) => (
+            <img key={index} src={image} alt="" />
+          ))}
+        </div>
+      </section>
     </main>
   )
 }
