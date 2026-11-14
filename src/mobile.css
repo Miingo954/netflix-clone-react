@@ -12,6 +12,13 @@
   color: #fff;
   padding-bottom: 96px;
 }
+@keyframes mobile-netflix-slide-in {
+  from { opacity: 0; transform: translateX(34px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.mobile-netflix-page-slide {
+  animation: mobile-netflix-slide-in .34s cubic-bezier(.22,.8,.3,1) both;
+}
 .mobile-netflix-header {
   display: flex;
   align-items: center;
@@ -40,6 +47,19 @@
   height: 40px;
   font-size: 1.7rem;
 }
+.mobile-netflix-back {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0 2px 4px 0;
+  border: 0;
+  border-radius: 50%;
+  background: #292929;
+  color: #fff;
+  font-size: 2.5rem;
+  line-height: 1;
+}
 .mobile-netflix-filters {
   display: grid;
   grid-template-columns: repeat(3, max-content);
@@ -58,13 +78,37 @@
   font-size: 0.98rem;
   font-weight: 700;
 }
+.mobile-netflix-filters button.active {
+  border-color: #fff;
+  background: #fff;
+  color: #080808;
+}
+.mobile-netflix-feature-track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc(100vw - 50px);
+  gap: 12px;
+  overflow-x: auto;
+  padding: 0 18px 8px;
+  scroll-padding-inline: 18px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
 .mobile-netflix-feature {
-  margin: 0 18px 20px;
+  margin: 0 0 12px;
   overflow: hidden;
   border: 1px solid #3a3a3a;
   border-radius: 18px;
   background: #101010;
+  scroll-snap-align: start;
+  animation: mobile-feature-enter .42s cubic-bezier(.2,.8,.3,1) both;
 }
+@keyframes mobile-feature-enter {
+  from { opacity: 0; transform: translateX(24px) scale(.985); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+.mobile-netflix-feature:nth-child(2) { animation-delay: .05s; }
+.mobile-netflix-feature:nth-child(3) { animation-delay: .1s; }
 .mobile-netflix-feature-image {
   position: relative;
   display: block;
@@ -229,29 +273,20 @@
   font-size: 2rem;
   line-height: 1;
 }
-.mobile-title-playback {
+.mobile-title-sound {
   position: absolute;
   z-index: 4;
-  top: 50%;
-  left: 50%;
+  right: 14px;
+  bottom: 14px;
   display: grid;
   place-items: center;
-  width: 54px;
-  height: 54px;
+  width: 42px;
+  height: 42px;
   padding: 0;
-  border: 3px solid #e50914;
+  border: 1px solid rgba(255,255,255,.7);
   border-radius: 50%;
-  background: rgba(0,0,0,.72);
+  background: rgba(0,0,0,.68);
   color: #fff;
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(.92);
-  transition: opacity .22s ease, transform .22s ease;
-  pointer-events: none;
-}
-.mobile-title-playback.visible {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
-  pointer-events: auto;
 }
 .mobile-title-copy { padding: 20px 18px 34px; }
 .mobile-title-copy h1 {
@@ -315,6 +350,13 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
+}
+.mobile-title-suggestions button {
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 5px;
+  background: #171717;
 }
 .mobile-title-suggestions img {
   width: 100%;
