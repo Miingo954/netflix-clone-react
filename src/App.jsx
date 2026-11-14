@@ -37,6 +37,17 @@ const excludedTitles = new Set([
   'Vision Quest',
 ])
 
+const tmdbGenres = {
+  16: 'Animation',
+  35: 'Comedy',
+  28: 'Action',
+  12: 'Adventure',
+  18: 'Drama',
+  10751: 'Family',
+  10759: 'Action & Adventure',
+  10765: 'Sci-Fi & Fantasy',
+}
+
 function isStreamworthy(item) {
   return !excludedTitles.has(item.title || item.name)
 }
@@ -182,6 +193,7 @@ function toTmdbMovie(item, type) {
   const backdrop = item.backdrop_path
     ? `https://image.tmdb.org/t/p/original${item.backdrop_path}`
     : poster
+  const genres = (item.genre_ids || []).map((id) => tmdbGenres[id]).filter(Boolean)
 
   return {
     id: `tmdb-${type}-${item.id}`,
@@ -190,7 +202,7 @@ function toTmdbMovie(item, type) {
     year,
     rating: type === 'series' ? 'TV Series' : 'Movie',
     type,
-    genre: type === 'series' ? 'TV Series' : 'Movie',
+    genre: genres.join(', ') || (type === 'series' ? 'TV Series' : 'Movie'),
     description: item.overview || 'Select this title to view more information.',
     image: poster,
     poster,
@@ -439,7 +451,7 @@ function StreamingApp() {
     .slice(0, 10)
   const comedyAndAnimation = [
     familyGuy,
-    ...series.filter((movie) => /comedy|animation/i.test(movie.genre || '')),
+    ...allMovies.filter((movie) => /comedy|animation|family/i.test(movie.genre || '')),
   ].filter(
     (movie, index, titles) => movie && titles.findIndex((item) => item?.id === movie.id) === index
   )
