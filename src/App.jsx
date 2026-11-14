@@ -1014,8 +1014,12 @@ function Row({ title, movies, select, empty, id }) {
 }
 
 function TitleLandingPage({ movie, relatedMovies, openMovie, back, inList, toggle }) {
+  const navigate = useNavigate()
+  const titleLocation = useLocation()
+  const routedSeason = Number(titleLocation.pathname.match(/\/season\/(\d+)/)?.[1]) || 1
+  const routedEpisode = Number(titleLocation.pathname.match(/\/episode\/(\d+)/)?.[1]) || 0
   const [title, setTitle] = useState(movie)
-  const [season, setSeason] = useState(1)
+  const [season, setSeason] = useState(routedSeason)
   const [episodes, setEpisodes] = useState(movie.episodes || [])
   const [titleMuted, setTitleMuted] = useState(false)
   const [titlePlaying, setTitlePlaying] = useState(false)
@@ -1026,7 +1030,9 @@ function TitleLandingPage({ movie, relatedMovies, openMovie, back, inList, toggl
     const kind = movie.type === 'series' ? 'tv' : 'movie'
     Promise.all([
       tmdbRequest(`/${kind}/${movie.tmdbID}?append_to_response=videos`),
-      movie.type === 'series' ? tmdbRequest(`/tv/${movie.tmdbID}/season/1`) : Promise.resolve(null),
+      movie.type === 'series'
+        ? tmdbRequest(`/tv/${movie.tmdbID}/season/${routedSeason}`)
+        : Promise.resolve(null),
     ])
       .then(([details, firstSeason]) => {
         const trailer = details.videos?.results?.find(
@@ -1052,7 +1058,7 @@ function TitleLandingPage({ movie, relatedMovies, openMovie, back, inList, toggl
         setEpisodes(firstSeason?.episodes || [])
       })
       .catch(() => {})
-  }, [movie])
+  }, [movie, routedSeason])
 
   useEffect(() => {
     if (title.type !== 'series' || !title.tmdbID) return
@@ -1083,6 +1089,15 @@ function TitleLandingPage({ movie, relatedMovies, openMovie, back, inList, toggl
         setMuted={setTitleMuted}
         relatedMovies={relatedMovies}
         openMovie={openMovie}
+        season={season}
+        episodeList={episodeList}
+        selectSeason={(nextSeason) => {
+          setSeason(nextSeason)
+          navigate(`/title/${movie.id}/season/${nextSeason}`)
+        }}
+        openEpisode={(episodeIndex) => {
+          navigate(`/title/${movie.id}/season/${season}/episode/${episodeIndex + 1}`)
+        }}
       />
     )
 
@@ -1160,8 +1175,18 @@ function TitleLandingPage({ movie, relatedMovies, openMovie, back, inList, toggl
       {title.type === 'series' && (
         <section className="title-episodes">
           <div className="episode-heading">
-            <h2>Episodes</h2>
-            <select value={season} onChange={(event) => setSeason(Number(event.target.value))}>
+            <div>
+              <p className="desktop-series-kicker">{title.title} · Season {season}</p>
+              <h2>Episodes</h2>
+            </div>
+            <select
+              value={season}
+              onChange={(event) => {
+                const nextSeason = Number(event.target.value)
+                setSeason(nextSeason)
+                navigate(`/title/${movie.id}/season/${nextSeason}`)
+              }}
+            >
               {Array.from({ length: title.seasons || 1 }, (_, index) => (
                 <option key={index + 1} value={index + 1}>
                   Season {index + 1}
@@ -1169,8 +1194,23 @@ function TitleLandingPage({ movie, relatedMovies, openMovie, back, inList, toggl
               ))}
             </select>
           </div>
+          {routedEpisode > 0 && episodeList[routedEpisode - 1] && (
+            <div className="desktop-episode-route" aria-live="polite">
+              <span>NOW VIEWING</span>
+              <strong>
+                S{season}:E{routedEpisode} · {episodeList[routedEpisode - 1].name}
+              </strong>
+              <button onClick={() => titlePlayer.current?.play()}>
+                <ControlIcon name="play" /> Play episode
+              </button>
+            </div>
+          )}
           {episodeList.map((episode, index) => (
-            <article className="title-episode" key={`${episode.id || episode.name}-${index}`}>
+            <article
+              className={`title-episode${routedEpisode === index + 1 ? ' active-episode' : ''}`}
+              key={`${episode.id || episode.name}-${index}`}
+              onClick={() => navigate(`/title/${movie.id}/season/${season}/episode/${index + 1}`)}
+            >
               <span>{index + 1}</span>
               <div>
                 <h3>{episode.name}</h3>
@@ -1201,6 +1241,10 @@ function MobileNetflixTitle({
   setMuted,
   relatedMovies,
   openMovie,
+  season,
+  episodeList,
+  selectSeason,
+  openEpisode,
 }) {
   const togglePlayback = () => {
     player.current?.togglePlayback()
@@ -1248,6 +1292,33 @@ function MobileNetflixTitle({
           <button><ControlIcon name="like" /><span>Rate</span></button>
           <button><span className="mobile-share-icon">⌁</span><span>Share</span></button>
         </div>
+        {title.type === 'series' && (
+          <section className="mobile-series-episodes">
+            <div className="mobile-series-heading">
+              <h2>Episodes</h2>
+              <select value={season} onChange={(event) => selectSeason(Number(event.target.value))}>
+                {Array.from({ length: title.seasons || 1 }, (_, index) => (
+                  <option key={index + 1} value={index + 1}>Season {index + 1}</option>
+                ))}
+              </select>
+            </div>
+            {episodeList.map((episode, index) => (
+              <button
+                className="mobile-series-episode"
+                key={`${episode.id || episode.name}-${index}`}
+                onClick={() => openEpisode(index)}
+              >
+                <span className="mobile-series-number">{index + 1}</span>
+                <span>
+                  <strong>{episode.name}</strong>
+                  <small>Season {season} · {episode.runtime || 45}m</small>
+                  <p>{episode.overview || 'Continue the story in this episode.'}</p>
+                </span>
+                <ControlIcon name="play" />
+              </button>
+            ))}
+          </section>
+        )}
         <div className="mobile-title-rule" />
         <h2>More Like This</h2>
         <div className="mobile-title-suggestions">

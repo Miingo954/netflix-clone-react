@@ -448,6 +448,55 @@
 }
 .mobile-title-actions button span:last-child { font-size: .75rem; }
 .mobile-share-icon { font-size: 1.8rem; }
+.mobile-series-episodes {
+  margin: 26px 0 24px;
+}
+.mobile-series-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+.mobile-series-heading h2 { margin: 0; }
+.mobile-series-heading select {
+  min-height: 42px;
+  padding: 0 32px 0 12px;
+  border: 1px solid #666;
+  border-radius: 6px;
+  background: #242424;
+  color: #fff;
+  font-size: .9rem;
+}
+.mobile-series-episode {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 15px 3px;
+  border: 0;
+  border-top: 1px solid #292929;
+  background: transparent;
+  color: #fff;
+  text-align: left;
+}
+.mobile-series-number { color: #999; text-align: center; }
+.mobile-series-episode > span:nth-child(2) {
+  display: grid;
+  gap: 4px;
+}
+.mobile-series-episode small { color: #aaa; }
+.mobile-series-episode p {
+  margin: 3px 0 0;
+  color: #8f8f8f;
+  font-size: .78rem;
+  line-height: 1.35;
+}
+.mobile-series-episode .control-icon {
+  width: 20px;
+  height: 20px;
+}
 .mobile-title-rule {
   width: 115px;
   height: 4px;

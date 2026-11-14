@@ -78,6 +78,14 @@ export default function TrailerPlayer({
           reportMuted(true)
         }
       },
+      play() {
+        const current = player.current
+        if (!current?.getPlayerState) {
+          pendingPlayRequest.current = 'muted'
+          return
+        }
+        current.playVideo()
+      },
     }),
     [onMutedChange]
   )

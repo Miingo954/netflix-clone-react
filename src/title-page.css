@@ -101,6 +101,7 @@
   gap: 20px;
   padding: 20px 4px;
   border-top: 1px solid #333;
+  cursor: pointer;
 }
 .title-episode > span {
   width: 28px;
@@ -128,6 +129,43 @@
   color: white;
   border: 1px solid #666;
   padding: 8px;
+}
+.desktop-series-kicker {
+  margin: 0 0 5px;
+  color: #aaa;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.desktop-episode-route {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 10px 0 18px;
+  padding: 16px 18px;
+  border-left: 4px solid #e50914;
+  border-radius: 4px;
+  background: #171717;
+}
+.desktop-episode-route > span {
+  color: #e50914;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+.desktop-episode-route button {
+  margin-left: auto;
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 4px;
+  background: #fff;
+  color: #080808;
+  font-weight: 800;
+}
+.title-episode.active-episode {
+  border-color: #e50914;
+  background: linear-gradient(90deg, rgba(229, 9, 20, 0.14), transparent 72%);
 }
 .title-page footer {
   padding: 40px 4vw;
