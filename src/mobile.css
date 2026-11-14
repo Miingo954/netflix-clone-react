@@ -166,10 +166,13 @@
   font-size: 1rem;
   font-weight: 800;
 }
-.mobile-netflix-feature-actions .mobile-netflix-play,
-.mobile-title-primary {
+.mobile-netflix-feature-actions .mobile-netflix-play {
   background: #fff;
   color: #070707;
+}
+.mobile-title-primary {
+  background: #e50914;
+  color: #fff;
 }
 .mobile-netflix-row {
   padding: 5px 0 20px 18px;
@@ -257,6 +260,9 @@
   height: 100%;
   border: 0;
   object-fit: cover;
+}
+.mobile-title-video {
+  pointer-events: none;
 }
 .mobile-title-close {
   position: absolute;
