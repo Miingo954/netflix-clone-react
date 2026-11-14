@@ -143,6 +143,7 @@ const trailers = [
     description:
       'Miles Morales is launched across the Multiverse, where he must decide what it truly means to be a hero.',
     videoId: 'shW9i6k8cB0',
+    backdrop: 'https://image.tmdb.org/t/p/original/kVd3a9YeLGkoeR50jGEXM6EqseS.jpg',
   },
   {
     title: 'Outer Banks',
@@ -150,6 +151,7 @@ const trailers = [
     description:
       'The Pogues chase a legendary treasure while navigating friendship, family secrets, and dangerous rivals along the Carolina coast.',
     videoId: 'SuqZPVPxsZE',
+    backdrop: 'https://image.tmdb.org/t/p/original/fGk5GVPP7qfEHr8b9pzS6AWsOmV.jpg',
   },
   {
     title: 'The Fantastic Four: First Steps',
@@ -157,6 +159,7 @@ const trailers = [
     description:
       'Marvel’s first family is pulled into a cosmic crisis that tests their powers, their bond, and the future of their world.',
     videoId: 'pAsmrKyMqaA',
+    backdrop: 'https://image.tmdb.org/t/p/original/s94NjfKkcSczZ1FembwmQZwsuwY.jpg',
   },
   {
     title: 'Superman',
@@ -164,6 +167,7 @@ const trailers = [
     description:
       'A young Clark Kent learns to balance his extraordinary powers with the compassion that makes him human.',
     videoId: '2woCZg5QdVE',
+    backdrop: 'https://image.tmdb.org/t/p/original/eGX66zonvc4bXg3rM08RUxdYSDx.jpg',
   },
 ]
 
@@ -227,6 +231,7 @@ function StreamingApp() {
   const [apiStatus, setApiStatus] = useState('')
   const [trailerIndex, setTrailerIndex] = useState(0)
   const [muted, setMuted] = useState(true)
+  const [mobileHeroPlaying, setMobileHeroPlaying] = useState(false)
   const heroPlayer = useRef(null)
   const heroTouch = useRef(null)
   const suppressHeroClick = useRef(false)
@@ -397,6 +402,7 @@ function StreamingApp() {
     })
   const feature = trailers[trailerIndex]
   const isMobileViewport = window.matchMedia('(max-width: 700px)').matches
+  useEffect(() => setMobileHeroPlaying(false), [trailerIndex])
   const allMovies = useMemo(
     () =>
       [
@@ -633,7 +639,7 @@ function StreamingApp() {
         id="home"
         style={{
           backgroundImage: 'linear-gradient(115deg, #080808 0%, #151515 58%, #24090b 100%)',
-          '--mobile-hero-image': `url(https://i.ytimg.com/vi/${feature.videoId}/maxresdefault.jpg)`,
+          '--mobile-hero-image': `url(${feature.backdrop})`,
         }}
         onTouchStart={startHeroSwipe}
         onTouchEnd={finishHeroSwipe}
@@ -650,6 +656,15 @@ function StreamingApp() {
             onMutedChange={setMuted}
           />
         )}
+        {isMobileViewport && mobileHeroPlaying && (
+          <iframe
+            className="mobile-hero-video"
+            src={`https://www.youtube-nocookie.com/embed/${feature.videoId}?autoplay=1&mute=0&controls=1&playsinline=1&rel=0`}
+            title={`${feature.title} trailer`}
+            allow="autoplay; encrypted-media; picture-in-picture"
+            allowFullScreen
+          />
+        )}
         <div className="hero-shade" />
         <div className="hero-copy" key={feature.videoId}>
           <p className="eyebrow">FEATURED TRAILER</p>
@@ -663,7 +678,7 @@ function StreamingApp() {
             className="secondary mobile-trailer-trigger"
             onClick={() =>
               isMobileViewport
-                ? setSelected({ ...feature, isTrailer: true })
+                ? setMobileHeroPlaying(true)
                 : heroPlayer.current?.toggleSound()
             }
           >
