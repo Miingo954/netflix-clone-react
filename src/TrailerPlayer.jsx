@@ -66,7 +66,6 @@ export default function TrailerPlayer({
     let disposed = false
     let instance
     let revealTimer
-    const isMobile = window.matchMedia('(max-width: 700px)').matches
     const container = host.current
     const frame = document.createElement('iframe')
     frame.className = className || ''
@@ -75,7 +74,7 @@ export default function TrailerPlayer({
     frame.loading = 'eager'
     frame.allow = 'autoplay; encrypted-media; picture-in-picture'
     frame.allowFullscreen = true
-    frame.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=${isMobile ? 0 : 1}&controls=${controls ? 1 : 0}&rel=0&cc_load_policy=0&iv_load_policy=3&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`
+    frame.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&controls=${controls ? 1 : 0}&rel=0&cc_load_policy=0&iv_load_policy=3&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`
     container.appendChild(frame)
     loadYouTube().then((YT) => {
       if (disposed) return
@@ -85,14 +84,9 @@ export default function TrailerPlayer({
             if (disposed) return
             player.current = target
             disableCaptions(target)
-            if (isMobile) {
-              target.unMute()
-              target.setVolume(100)
-            } else {
-              target.mute()
-            }
+            target.mute()
             target.playVideo()
-            reportMuted(!isMobile)
+            reportMuted(true)
           },
           onAutoplayBlocked({ target }) {
             if (disposed) return
