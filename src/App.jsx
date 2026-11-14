@@ -231,7 +231,6 @@ function StreamingApp() {
   const [apiStatus, setApiStatus] = useState('')
   const [trailerIndex, setTrailerIndex] = useState(0)
   const [muted, setMuted] = useState(true)
-  const [mobileHeroPlaying, setMobileHeroPlaying] = useState(false)
   const heroPlayer = useRef(null)
   const heroTouch = useRef(null)
   const suppressHeroClick = useRef(false)
@@ -402,7 +401,6 @@ function StreamingApp() {
     })
   const feature = trailers[trailerIndex]
   const isMobileViewport = window.matchMedia('(max-width: 700px)').matches
-  useEffect(() => setMobileHeroPlaying(false), [trailerIndex])
   const allMovies = useMemo(
     () =>
       [
@@ -639,7 +637,6 @@ function StreamingApp() {
         id="home"
         style={{
           backgroundImage: 'linear-gradient(115deg, #080808 0%, #151515 58%, #24090b 100%)',
-          '--mobile-hero-image': `url(${feature.backdrop})`,
         }}
         onTouchStart={startHeroSwipe}
         onTouchEnd={finishHeroSwipe}
@@ -647,24 +644,13 @@ function StreamingApp() {
           heroTouch.current = null
         }}
       >
-        {!isMobileViewport && (
-          <TrailerPlayer
-            ref={heroPlayer}
-            videoId={feature.videoId}
-            className="hero-video"
-            title={`${feature.title} video`}
-            onMutedChange={setMuted}
-          />
-        )}
-        {isMobileViewport && mobileHeroPlaying && (
-          <iframe
-            className="mobile-hero-video"
-            src={`https://www.youtube-nocookie.com/embed/${feature.videoId}?autoplay=1&mute=0&controls=1&playsinline=1&rel=0`}
-            title={`${feature.title} trailer`}
-            allow="autoplay; encrypted-media; picture-in-picture"
-            allowFullScreen
-          />
-        )}
+        <TrailerPlayer
+          ref={heroPlayer}
+          videoId={feature.videoId}
+          className="hero-video"
+          title={`${feature.title} video`}
+          onMutedChange={setMuted}
+        />
         <div className="hero-shade" />
         <div className="hero-copy" key={feature.videoId}>
           <p className="eyebrow">FEATURED TRAILER</p>
@@ -675,12 +661,8 @@ function StreamingApp() {
             <ControlIcon name="play" /> Play
           </button>
           <button
-            className="secondary mobile-trailer-trigger"
-            onClick={() =>
-              isMobileViewport
-                ? setMobileHeroPlaying(true)
-                : heroPlayer.current?.toggleSound()
-            }
+            className="secondary"
+            onClick={() => heroPlayer.current?.toggleSound()}
           >
             <ControlIcon name={isMobileViewport ? 'play' : muted ? 'muted' : 'sound'} />{' '}
             {isMobileViewport ? 'Play trailer' : muted ? 'Turn sound on' : 'Mute'}
